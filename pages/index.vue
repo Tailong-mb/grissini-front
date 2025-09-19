@@ -1,7 +1,11 @@
 <template>
 	<div class="collections-page">
 		<div class="container">
-			<h1>Nos collections</h1>
+			<div class="page-header">
+				<h1 v-if="homeData?.title">{{ getLocalizedTitle(homeData.title) }}</h1>
+				<h1 v-else>Nos collections</h1>
+				<LanguageSwitcher />
+			</div>
 			<div v-if="loading" class="collections-page__loading">
 				<div class="loading-spinner"></div>
 				<p>Chargement des collections...</p>
@@ -49,7 +53,12 @@
 import { ref, onMounted } from 'vue';
 import { useSanityCollections } from '@/composables/useSanityCollections';
 import { useSanityProducts } from '@/composables/useSanityProducts';
+import { useSanityHome } from '@/composables/useSanityHome';
 import ProductCard from '@/components/ProductCard.vue';
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
+import { useI18n } from 'vue-i18n';
+
+const { locale } = useI18n();
 
 const collections = ref([]);
 const loading = ref(false);
@@ -58,6 +67,10 @@ const error = ref(null);
 const products = ref([]);
 const loadingProducts = ref(false);
 const errorProducts = ref(null);
+
+const homeData = ref(null);
+const loadingHome = ref(false);
+const errorHome = ref(null);
 
 const loadCollections = async () => {
 	loading.value = true;
@@ -83,6 +96,24 @@ const loadProducts = async () => {
 	}
 };
 
+const loadHomeData = async () => {
+	loadingHome.value = true;
+	errorHome.value = null;
+	try {
+		homeData.value = await useSanityHome();
+	} catch (err) {
+		errorHome.value = err.message;
+	} finally {
+		loadingHome.value = false;
+	}
+};
+
+const getLocalizedTitle = (titleObject) => {
+	if (!titleObject) return '';
+
+	return titleObject[locale.value] || titleObject.fr || titleObject.en || '';
+};
+
 const truncateDescription = (description, maxLength = 100) => {
 	if (!description) return '';
 	if (description.length <= maxLength) return description;
@@ -90,12 +121,20 @@ const truncateDescription = (description, maxLength = 100) => {
 };
 
 onMounted(() => {
+	loadHomeData();
 	loadCollections();
 	loadProducts();
 });
 </script>
 
 <style scoped>
+.page-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 2rem;
+}
+
 .collections-grid {
 	display: flex;
 	flex-wrap: wrap;

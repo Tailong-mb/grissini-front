@@ -16,6 +16,7 @@
 		"vue-i18n": "^11.1.12"
 	},
 	"dependencies": {
+		"@nuxtjs/i18n": "^10.1.0",
 		"@sanity/client": "^7.11.0",
 		"@shopify/shopify-api": "^11.14.1",
 		"graphql": "^16.11.0",

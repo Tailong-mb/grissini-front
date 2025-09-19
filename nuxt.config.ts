@@ -5,13 +5,38 @@ export default defineNuxtConfig({
 	ssr: false,
 	devtools: { enabled: false },
 
+	modules: ['@nuxtjs/i18n'],
+
+	i18n: {
+		locales: [
+			{
+				code: 'fr',
+				name: 'Français',
+				file: 'fr.json',
+			},
+			{
+				code: 'en',
+				name: 'English',
+				file: 'en.json',
+			},
+		],
+		defaultLocale: 'fr',
+		lazy: true,
+		langDir: 'locales/',
+		strategy: 'prefix_except_default',
+		detectBrowserLanguage: {
+			useCookie: true,
+			cookieKey: 'i18n_redirected',
+			redirectOn: 'root',
+		},
+	},
+
 	runtimeConfig: {
 		public: {
 			SHOPIFY_STORE_DOMAIN: process.env.SHOPIFY_STORE_DOMAIN,
 			SHOPIFY_STOREFRONT_ACCESS_TOKEN: process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN,
 			SHOPIFY_STOREFRONT_API_VERSION: process.env.SHOPIFY_STOREFRONT_API_VERSION,
-			NUXT_PUBLIC_SITE_URL: process.env.NUXT_PUBLIC_SITE_URL
-		}
+		},
 	},
 
 	build: {
