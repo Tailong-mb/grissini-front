@@ -1,15 +1,25 @@
 <template>
 	<div class="language-switcher">
-		<button v-for="locale in availableLocales" :key="locale.code" @click="switchLanguage(locale.code)" :class="{ active: locale.code === $i18n.locale }" class="language-btn">
-			{{ locale.name }}
-		</button>
+		<select v-model="currentLocale" @change="switchLanguage(currentLocale)" class="language-select">
+			<option v-for="locale in availableLocales" :key="locale.code" :value="locale.code">
+				{{ locale.name }}
+			</option>
+		</select>
 	</div>
 </template>
 
 <script setup>
 import { useI18n } from 'vue-i18n';
+import { computed } from 'vue';
 
 const { locale, availableLocales } = useI18n();
+
+const currentLocale = computed({
+	get: () => locale.value,
+	set: (value) => {
+		locale.value = value;
+	},
+});
 
 const switchLanguage = (newLocale) => {
 	locale.value = newLocale;
@@ -19,25 +29,26 @@ const switchLanguage = (newLocale) => {
 <style scoped>
 .language-switcher {
 	display: flex;
-	gap: 0.5rem;
+	align-items: center;
 }
 
-.language-btn {
-	padding: 0.5rem 1rem;
+.language-select {
+	padding: 0.5rem;
 	border: 1px solid #ccc;
 	background: white;
-	cursor: pointer;
 	border-radius: 4px;
+	font-size: 14px;
+	cursor: pointer;
 	transition: all 0.2s;
 }
 
-.language-btn:hover {
-	background: #f5f5f5;
+.language-select:hover {
+	border-color: #007bff;
 }
 
-.language-btn.active {
-	background: #007bff;
-	color: white;
+.language-select:focus {
+	outline: none;
 	border-color: #007bff;
+	box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 </style>

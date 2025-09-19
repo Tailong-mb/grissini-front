@@ -1,4 +1,10 @@
 {
 	"hello": "Bonjour le monde!",
-	"language": "Langue"
+	"language": "Langue",
+	"welcome": "Bienvenue sur Grissini",
+	"collections": "Nos collections",
+	"products": "Nos produits",
+	"loading": "Chargement...",
+	"error": "Erreur",
+	"retry": "Réessayer"
 }

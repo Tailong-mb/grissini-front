@@ -111,7 +111,8 @@ const loadHomeData = async () => {
 const getLocalizedTitle = (titleObject) => {
 	if (!titleObject) return '';
 
-	return titleObject[locale.value] || titleObject.fr || titleObject.en || '';
+	// Retourner le titre dans la langue actuelle, ou en anglais par défaut
+	return titleObject[locale.value] || titleObject.en || '';
 };
 
 const truncateDescription = (description, maxLength = 100) => {
