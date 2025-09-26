@@ -44,16 +44,13 @@ $xlarge: 1600px;
 
 @mixin grid {
 	display: grid;
-	grid-template-columns: repeat(4, minmax(0, 1fr));
-	column-gap: 2.539%;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	column-gap: 8rem;
+	width: calc(100% - 16rem);
+	margin: 0 auto;
 
 	@include tablet {
 		grid-template-columns: repeat(12, minmax(0, 1fr));
-		column-gap: 20rem;
-	}
-
-	@include large {
-		column-gap: 25rem;
 	}
 }
 .grid {
@@ -63,7 +60,8 @@ $xlarge: 1600px;
 .container,
 .mb\:container,
 .tb\:container {
-	@for $i from 1 through 5 {
+	@include grid();
+	@for $i from 1 through 6 {
 		.col-start-#{$i} {
 			grid-column-start: $i;
 		}

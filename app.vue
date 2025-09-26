@@ -1,12 +1,17 @@
 <template>
 	<NuxtPage />
+	<Navigation />
 </template>
 
-<script setup></script>
+<script setup>
+import Navigation from '@/components/Navigation.vue';
+</script>
 
 <style lang="scss">
 html {
 	font-size: calc(max(100vw / 360, 1px));
+	background-color: $white;
+	min-height: 100dvh;
 
 	@include tablet {
 		font-size: calc(max(100vw / 768, 1px));

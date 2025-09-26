@@ -160,8 +160,68 @@
 	font-display: swap;
 }
 
+// Font PPEditorialNew - Ultralight
+@font-face {
+	font-family: 'PPEditorialNew';
+	src: url('/static/fonts/PPEditorialNew-Ultralight.otf') format('opentype');
+	font-weight: 200;
+	font-style: normal;
+	font-display: swap;
+}
+
+// Font PPEditorialNew - Ultralight Italic
+@font-face {
+	font-family: 'PPEditorialNew';
+	src: url('/static/fonts/PPEditorialNew-UltralightItalic.otf') format('opentype');
+	font-weight: 200;
+	font-style: italic;
+	font-display: swap;
+}
+
+// Font PPEditorialNew - Regular
+@font-face {
+	font-family: 'PPEditorialNew';
+	src: url('/static/fonts/PPEditorialNew-Regular.otf') format('opentype');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+// Font PPEditorialNew - Italic
+@font-face {
+	font-family: 'PPEditorialNew';
+	src: url('/static/fonts/PPEditorialNew-Italic.otf') format('opentype');
+	font-weight: 400;
+	font-style: italic;
+	font-display: swap;
+}
+
+// Font PPEditorialNew - Ultrabold
+@font-face {
+	font-family: 'PPEditorialNew';
+	src: url('/static/fonts/PPEditorialNew-Ultrabold.otf') format('opentype');
+	font-weight: 800;
+	font-style: normal;
+	font-display: swap;
+}
+
+// Font PPEditorialNew - Ultrabold Italic
+@font-face {
+	font-family: 'PPEditorialNew';
+	src: url('/static/fonts/PPEditorialNew-UltraboldItalic.otf') format('opentype');
+	font-weight: 800;
+	font-style: italic;
+	font-display: swap;
+}
+
 @mixin switzer($weight: 400, $style: normal) {
 	font-family: 'Switzer';
+	font-weight: $weight;
+	font-style: $style;
+}
+
+@mixin ppeditorial($weight: 400, $style: normal) {
+	font-family: 'PPEditorialNew';
 	font-weight: $weight;
 	font-style: $style;
 }
