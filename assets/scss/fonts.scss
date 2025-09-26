@@ -1,13 +1,167 @@
+// Font Switzer - Thin
 @font-face {
-	font-family: 'Archer';
-	src: url('~static/fonts/ArcherDisplay-Regular.otf') format('opentype');
+	font-family: 'Switzer';
+	src: url('/static/fonts/Switzer-Thin.otf') format('opentype');
+	font-weight: 100;
+	font-style: normal;
+	font-display: swap;
+}
+
+// Font Switzer - Thin Italic
+@font-face {
+	font-family: 'Switzer';
+	src: url('/static/fonts/Switzer-ThinItalic.otf') format('opentype');
+	font-weight: 100;
+	font-style: italic;
+	font-display: swap;
+}
+
+// Font Switzer - Extralight
+@font-face {
+	font-family: 'Switzer';
+	src: url('/static/fonts/Switzer-Extralight.otf') format('opentype');
+	font-weight: 200;
+	font-style: normal;
+	font-display: swap;
+}
+
+// Font Switzer - Extralight Italic
+@font-face {
+	font-family: 'Switzer';
+	src: url('/static/fonts/Switzer-ExtralightItalic.otf') format('opentype');
+	font-weight: 200;
+	font-style: italic;
+	font-display: swap;
+}
+
+// Font Switzer - Light
+@font-face {
+	font-family: 'Switzer';
+	src: url('/static/fonts/Switzer-Light.otf') format('opentype');
+	font-weight: 300;
+	font-style: normal;
+	font-display: swap;
+}
+
+// Font Switzer - Light Italic
+@font-face {
+	font-family: 'Switzer';
+	src: url('/static/fonts/Switzer-LightItalic.otf') format('opentype');
+	font-weight: 300;
+	font-style: italic;
+	font-display: swap;
+}
+
+// Font Switzer - Regular
+@font-face {
+	font-family: 'Switzer';
+	src: url('/static/fonts/Switzer-Regular.otf') format('opentype');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+// Font Switzer - Italic
+@font-face {
+	font-family: 'Switzer';
+	src: url('/static/fonts/Switzer-Italic.otf') format('opentype');
+	font-weight: 400;
+	font-style: italic;
+	font-display: swap;
+}
+
+// Font Switzer - Medium
+@font-face {
+	font-family: 'Switzer';
+	src: url('/static/fonts/Switzer-Medium.otf') format('opentype');
 	font-weight: 500;
 	font-style: normal;
 	font-display: swap;
 }
 
-@mixin regular-archer {
-	font-family: 'Archer', sans-serif;
+// Font Switzer - Medium Italic
+@font-face {
+	font-family: 'Switzer';
+	src: url('/static/fonts/Switzer-MediumItalic.otf') format('opentype');
 	font-weight: 500;
+	font-style: italic;
+	font-display: swap;
+}
+
+// Font Switzer - Semibold
+@font-face {
+	font-family: 'Switzer';
+	src: url('/static/fonts/Switzer-Semibold.otf') format('opentype');
+	font-weight: 600;
 	font-style: normal;
+	font-display: swap;
+}
+
+// Font Switzer - Semibold Italic
+@font-face {
+	font-family: 'Switzer';
+	src: url('/static/fonts/Switzer-SemiboldItalic.otf') format('opentype');
+	font-weight: 600;
+	font-style: italic;
+	font-display: swap;
+}
+
+// Font Switzer - Bold
+@font-face {
+	font-family: 'Switzer';
+	src: url('/static/fonts/Switzer-Bold.otf') format('opentype');
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
+}
+
+// Font Switzer - Bold Italic
+@font-face {
+	font-family: 'Switzer';
+	src: url('/static/fonts/Switzer-BoldItalic.otf') format('opentype');
+	font-weight: 700;
+	font-style: italic;
+	font-display: swap;
+}
+
+// Font Switzer - Extrabold
+@font-face {
+	font-family: 'Switzer';
+	src: url('/static/fonts/Switzer-Extrabold.otf') format('opentype');
+	font-weight: 800;
+	font-style: normal;
+	font-display: swap;
+}
+
+// Font Switzer - Extrabold Italic
+@font-face {
+	font-family: 'Switzer';
+	src: url('/static/fonts/Switzer-ExtraboldItalic.otf') format('opentype');
+	font-weight: 800;
+	font-style: italic;
+	font-display: swap;
+}
+
+// Font Switzer - Black
+@font-face {
+	font-family: 'Switzer';
+	src: url('/static/fonts/Switzer-Black.otf') format('opentype');
+	font-weight: 900;
+	font-style: normal;
+	font-display: swap;
+}
+
+// Font Switzer - Black Italic
+@font-face {
+	font-family: 'Switzer';
+	src: url('/static/fonts/Switzer-BlackItalic.otf') format('opentype');
+	font-weight: 900;
+	font-style: italic;
+	font-display: swap;
+}
+
+@mixin switzer($weight: 400, $style: normal) {
+	font-family: 'Switzer';
+	font-weight: $weight;
+	font-style: $style;
 }

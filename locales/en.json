@@ -1,10 +1,4 @@
 {
-	"hello": "Hello world!",
-	"language": "Language",
-	"welcome": "Welcome to Grissini",
-	"collections": "Our Collections",
-	"products": "Our Products",
-	"loading": "Loading...",
-	"error": "Error",
-	"retry": "Retry"
+    "hello": "Hello world!",
+    "language": "Language"
 }
