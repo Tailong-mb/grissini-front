@@ -1,28 +1,62 @@
 <template>
-	<div class="product-detail-page"></div>
+	<div>
+		<h1>Product Detail Page</h1>
+		<p>Check console for data logs</p>
+
+		<div v-if="loading">Loading product...</div>
+		<div v-else-if="error">Error: {{ error }}</div>
+		<div v-else-if="product">
+			<h2>{{ product.translations?.title || product.title }}</h2>
+			<p><strong>Description:</strong> {{ product.translations?.description || 'No description' }}</p>
+			<p><strong>Price:</strong> {{ product.priceRange?.minVariantPrice }} - {{ product.priceRange?.maxVariantPrice }}</p>
+			<p><strong>Images:</strong> {{ product.images?.length || 0 }}</p>
+			<p><strong>Variants:</strong> {{ product.variants?.length || 0 }}</p>
+			<p><strong>Product Type:</strong> {{ product.productType || 'No type' }}</p>
+			<p><strong>Vendor:</strong> {{ product.vendor || 'No vendor' }}</p>
+
+			<!-- Variants selection -->
+			<div v-if="product.variants?.length > 1">
+				<h3>Select Variant:</h3>
+				<select v-model="selectedVariant" style="padding: 10px; margin: 10px 0">
+					<option v-for="variant in product.variants" :key="variant._id" :value="variant">{{ variant.title }} - {{ variant.price }}</option>
+				</select>
+			</div>
+
+			<!-- Quantity -->
+			<div>
+				<label>Quantity:</label>
+				<input v-model="quantity" type="number" min="1" style="padding: 5px; margin: 10px" />
+			</div>
+
+			<!-- Add to Cart Button -->
+			<button @click="handleAddToCart" :disabled="!selectedVariant || cartLoading" style="background: #007bff; color: white; padding: 15px 30px; border: none; cursor: pointer; margin-top: 20px; font-size: 16px">
+				{{ cartLoading ? 'Adding...' : product.translations?.addToCartText || 'Add to Cart' }}
+			</button>
+		</div>
+	</div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { formatPrice } from '~/utils/shopify';
+import { useSanityProductWithTranslations } from '@/composables/useSanityProductsWithTranslations';
+import { useI18n } from 'vue-i18n';
 
 const route = useRoute();
-const { getProductByHandle } = useShopify();
+const { locale } = useI18n();
 const { addToCart, loading: cartLoading } = useCart();
 
 const product = ref(null);
 const selectedVariant = ref(null);
-const selectedImage = ref(null);
 const quantity = ref(1);
 const loading = ref(false);
 const error = ref(null);
 
 useHead(() => ({
-	title: product.value ? `${product.value.title} - Shopify Store` : 'Product - Shopify Store',
+	title: product.value ? `${product.value.translations?.title || product.value.title} - Grissini` : 'Product - Grissini',
 	meta: [
 		{
 			name: 'description',
-			content: product.value?.description || 'Product details',
+			content: product.value?.translations?.description || product.value?.title || 'Product details',
 		},
 	],
 }));
@@ -32,29 +66,37 @@ const loadProduct = async () => {
 	error.value = null;
 
 	try {
-		const productData = await getProductByHandle(route.params.handle);
+		const handle = route.params.handle;
+		const productData = await useSanityProductWithTranslations(handle, locale.value);
 		product.value = productData;
 
-		// Sélectionner la première variante et image par défaut
-		if (productData.variants?.edges?.length > 0) {
-			selectedVariant.value = productData.variants.edges[0].node;
+		// Sélectionner la première variante par défaut
+		if (productData.variants?.length > 0) {
+			selectedVariant.value = productData.variants[0];
 		}
 
-		if (productData.images?.edges?.length > 0) {
-			selectedImage.value = productData.images.edges[0].node;
-		}
+		console.log('=== PRODUCT DETAIL PAGE DATA ===');
+		console.log('Handle:', handle);
+		console.log('Locale:', locale.value);
+		console.log('Product Data:', productData);
+		console.log('================================');
 	} catch (err) {
 		error.value = err.message;
+		console.error('Product detail page error:', err);
 	} finally {
 		loading.value = false;
 	}
 };
 
 const handleAddToCart = async () => {
-	if (!selectedVariant.value?.availableForSale) return;
+	if (!selectedVariant.value) {
+		console.error('No variant selected');
+		return;
+	}
 
 	try {
-		await addToCart(selectedVariant.value.id, quantity.value);
+		await addToCart(selectedVariant.value.shopifyId, quantity.value);
+		console.log('Product added to cart:', product.value.translations?.title || product.value.title);
 	} catch (err) {
 		console.error('Error adding to cart:', err);
 	}
@@ -64,5 +106,3 @@ onMounted(() => {
 	loadProduct();
 });
 </script>
-
-<style lang="scss"></style>
