@@ -2,6 +2,28 @@
 	<div>
 		<h1>Hub Page</h1>
 		<p>Check console for data logs</p>
+
+		<div v-if="loading">Loading...</div>
+		<div v-else-if="error">Error: {{ error }}</div>
+		<div v-else-if="hubData">
+			<h2>{{ hubData.viewText }}</h2>
+			<p><strong>Watch All Text:</strong> {{ hubData.watchAllText }}</p>
+			<p><strong>Watch All Link:</strong> {{ hubData.watchAllLink || 'No link' }}</p>
+			<p><strong>Watch Text:</strong> {{ hubData.watchText }}</p>
+
+			<div v-if="hubData.items && hubData.items.length > 0">
+				<h3>Hub Items ({{ hubData.items.length }}):</h3>
+				<div v-for="item in hubData.items" :key="item._key" style="border: 1px solid #ddd; padding: 15px; margin: 10px 0">
+					<h4>{{ item.title }}</h4>
+					<p><strong>Subtitle:</strong> {{ item.subtitle }}</p>
+					<p><strong>Thumbnail Mobile:</strong> {{ item.thumbnailMobile ? 'Yes' : 'No' }}</p>
+					<p><strong>Thumbnail Desktop:</strong> {{ item.thumbnailDesktop ? 'Yes' : 'No' }}</p>
+					<p><strong>Video Mobile:</strong> {{ item.videoMobile ? 'Yes' : 'No' }}</p>
+					<p><strong>Video Desktop:</strong> {{ item.videoDesktop ? 'Yes' : 'No' }}</p>
+					<p><strong>Link:</strong> {{ item.link || 'No link' }}</p>
+				</div>
+			</div>
+		</div>
 	</div>
 </template>
 

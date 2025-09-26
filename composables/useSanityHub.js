@@ -7,14 +7,28 @@ export const useSanityHub = async (locale = 'en') => {
     "watchAllLink": watchAllLink,
     "watchText": watchText.${locale},
     "items": items[]{
-      thumbnail{
+      thumbnailMobile{
         asset->{
           _id,
           url,
           metadata
         }
       },
-      video{
+      thumbnailDesktop{
+        asset->{
+          _id,
+          url,
+          metadata
+        }
+      },
+      videoMobile{
+        asset->{
+          _id,
+          url,
+          originalFilename
+        }
+      },
+      videoDesktop{
         asset->{
           _id,
           url,
