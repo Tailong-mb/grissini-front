@@ -47,7 +47,7 @@ $xlarge: 1600px;
 	grid-template-columns: repeat(5, minmax(0, 1fr));
 	column-gap: 8rem;
 	width: calc(100% - 16rem);
-	margin: 0 auto;
+	margin: 0 8rem;
 
 	@include tablet {
 		grid-template-columns: repeat(12, minmax(0, 1fr));

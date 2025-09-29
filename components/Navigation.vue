@@ -31,13 +31,6 @@ const isActiveLink = (linkUrl) => {
 onMounted(async () => {
 	try {
 		data.value = await useSanityNavigation(locale.value);
-		console.log('=== NAVIGATION DATA ===');
-		console.log('Locale:', locale.value);
-		console.log('Raw Navigation Data:', data.value);
-		console.log('mainNavigation:', data.value?.mainNavigation);
-		console.log('Type of mainNavigation:', typeof data.value?.mainNavigation);
-		console.log('Is Array:', Array.isArray(data.value?.mainNavigation));
-		console.log('========================');
 	} catch (err) {
 		console.error('Navigation loading error:', err);
 	}
@@ -50,9 +43,10 @@ nav {
 	bottom: 24rem;
 	left: 8rem;
 	z-index: 100;
+	pointer-events: none;
 	display: none;
 
-	@include desktop {
+	@include tablet {
 		display: block;
 	}
 
@@ -65,6 +59,7 @@ nav {
 			a {
 				display: flex;
 				align-items: center;
+				pointer-events: all;
 				gap: 8rem;
 				font-size: 12rem;
 				@include switzer(600, normal);
