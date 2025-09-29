@@ -68,6 +68,7 @@ const switchLanguage = async (newLocale) => {
 			font-size: 12rem;
 			transition: opacity 0.3s linear;
 			opacity: 0;
+			pointer-events: none;
 
 			&:hover,
 			&.active {
@@ -76,6 +77,7 @@ const switchLanguage = async (newLocale) => {
 
 			&.switch-active {
 				opacity: 0.2;
+				pointer-events: all;
 			}
 		}
 	}

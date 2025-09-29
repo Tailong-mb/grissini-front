@@ -7,16 +7,36 @@
 
 <script setup>
 const { locale } = useI18n();
-const data = ref(null);
+const rawData = ref(null);
 
-onMounted(async () => {
-	data.value = await useSanityMenu(locale.value);
+// Computed property to get localized menu data
+const data = computed(() => {
+	if (!rawData.value) return null;
 
-	console.log('=== MENU DATA ===');
-	console.log('Locale:', locale.value);
-	console.log('Menu Data:', data.value);
-	console.log('=====================');
+	return {
+		menuText: rawData.value.menuText?.[locale.value] || rawData.value.menuText?.en || rawData.value.menuText,
+		menuClose: rawData.value.menuClose?.[locale.value] || rawData.value.menuClose?.en || rawData.value.menuClose,
+		description: rawData.value.description?.[locale.value] || rawData.value.description?.en || rawData.value.description,
+		newsletterText: rawData.value.newsletterText?.[locale.value] || rawData.value.newsletterText?.en || rawData.value.newsletterText,
+		contactText: rawData.value.contactText?.[locale.value] || rawData.value.contactText?.en || rawData.value.contactText,
+		mail: rawData.value.mail,
+	};
 });
+
+const loadMenuData = async () => {
+	try {
+		rawData.value = await useSanityMenu();
+		console.log('=== NAVIGATION BOTTOM MENU DATA ===');
+		console.log('Raw Data:', rawData.value);
+		console.log('Current Locale:', locale.value);
+		console.log('Computed Data:', data.value);
+		console.log('===================================');
+	} catch (err) {
+		console.error('Navigation bottom menu loading error:', err);
+	}
+};
+
+onMounted(loadMenuData);
 </script>
 
 <style lang="scss" scoped>

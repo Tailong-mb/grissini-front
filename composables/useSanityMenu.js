@@ -1,12 +1,12 @@
 import sanity from '@/utils/sanity';
 
-export const useSanityMenu = async (locale = 'en') => {
+export const useSanityMenu = async () => {
 	const query = `*[_type == "menuSettings"][0]{
-    "menuText": menu.menuText.${locale},
-    "menuClose": menu.menuClose.${locale},
-    "description": menu.description.${locale},
-    "newsletterText": menu.newsletterText.${locale},
-    "contactText": menu.contactText.${locale},
+    "menuText": menu.menuText,
+    "menuClose": menu.menuClose,
+    "description": menu.description,
+    "newsletterText": menu.newsletterText,
+    "contactText": menu.contactText,
     "mail": menu.mail
   }`;
 

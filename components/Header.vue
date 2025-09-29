@@ -21,11 +21,36 @@ import LogoSvg from '@/components/svg/LogoSvg.vue';
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 
 const { locale } = useI18n();
-const data = ref(null);
+const rawData = ref(null);
 
-onMounted(async () => {
-	data.value = await useSanityMenu(locale.value);
+// Computed property to get localized menu data
+const data = computed(() => {
+	if (!rawData.value) return null;
+
+	return {
+		menuText: rawData.value.menuText?.[locale.value] || rawData.value.menuText?.en || rawData.value.menuText,
+		menuClose: rawData.value.menuClose?.[locale.value] || rawData.value.menuClose?.en || rawData.value.menuClose,
+		description: rawData.value.description?.[locale.value] || rawData.value.description?.en || rawData.value.description,
+		newsletterText: rawData.value.newsletterText?.[locale.value] || rawData.value.newsletterText?.en || rawData.value.newsletterText,
+		contactText: rawData.value.contactText?.[locale.value] || rawData.value.contactText?.en || rawData.value.contactText,
+		mail: rawData.value.mail,
+	};
 });
+
+const loadMenuData = async () => {
+	try {
+		rawData.value = await useSanityMenu();
+		console.log('=== HEADER MENU DATA ===');
+		console.log('Raw Data:', rawData.value);
+		console.log('Current Locale:', locale.value);
+		console.log('Computed Data:', data.value);
+		console.log('========================');
+	} catch (err) {
+		console.error('Header menu loading error:', err);
+	}
+};
+
+onMounted(loadMenuData);
 </script>
 
 <style lang="scss" scoped>
