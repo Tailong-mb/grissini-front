@@ -1,9 +1,9 @@
 import sanity from '@/utils/sanity';
 
-export const useSanityNavigation = async (locale = 'en') => {
+export const useSanityNavigation = async () => {
 	const query = `*[_type == "navigationSettings"][0]{
     "mainNavigation": mainNavigation.links[]{
-      "text": text.${locale},
+      "text": text,
       url,
       isActive
     }

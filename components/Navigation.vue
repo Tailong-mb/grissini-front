@@ -17,7 +17,18 @@ import NoteSvg from '@/components/svg/NoteSvg.vue';
 
 const { locale } = useI18n();
 const route = useRoute();
-const data = ref(null);
+const rawData = ref(null);
+
+const data = computed(() => {
+	if (!rawData.value?.mainNavigation) return null;
+
+	return {
+		mainNavigation: rawData.value.mainNavigation.map((link) => ({
+			...link,
+			text: link.text[locale.value] || link.text.en || link.text,
+		})),
+	};
+});
 
 const isActiveLink = (linkUrl) => {
 	if (!linkUrl || !route.path) return false;
@@ -25,16 +36,27 @@ const isActiveLink = (linkUrl) => {
 	const currentPath = route.path;
 	const normalizedLinkUrl = linkUrl.startsWith('/') ? linkUrl : `/${linkUrl}`;
 
-	return currentPath === normalizedLinkUrl || currentPath.startsWith(normalizedLinkUrl + '/');
+	const pathWithoutLocale = currentPath.replace(/^\/[a-z]{2}\//, '/');
+
+	const linkWithoutLocale = normalizedLinkUrl.replace(/^\/[a-z]{2}\//, '/');
+
+	return pathWithoutLocale === linkWithoutLocale || pathWithoutLocale.startsWith(linkWithoutLocale + '/');
 };
 
-onMounted(async () => {
+const loadNavigationData = async () => {
 	try {
-		data.value = await useSanityNavigation(locale.value);
+		rawData.value = await useSanityNavigation();
+		console.log('=== NAVIGATION DATA ===');
+		console.log('Raw Data:', rawData.value);
+		console.log('Current Locale:', locale.value);
+		console.log('Computed Data:', data.value);
+		console.log('========================');
 	} catch (err) {
 		console.error('Navigation loading error:', err);
 	}
-});
+};
+
+onMounted(loadNavigationData);
 </script>
 
 <style lang="scss" scoped>

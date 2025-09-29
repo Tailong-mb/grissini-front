@@ -1,43 +1,95 @@
 <template>
-	<div class="language-switcher">
-		<button v-for="locale in availableLocales" :key="locale.code" @click="switchLanguage(locale.code)" :class="{ active: locale.code === $i18n.locale }" class="language-btn">
-			{{ locale.name }}
+	<div class="language-switcher__wrapper">
+		<div class="language-switcher">
+			<button v-for="localeItem in locales" :key="localeItem.code" @click="switchLanguage(localeItem.code)" :class="{ active: localeItem.code === $i18n.locale, 'switch-active': switchLanguageValue }" class="language-btn">
+				{{ localeItem.code.toUpperCase() }}
+			</button>
+		</div>
+		<button class="language-switcher__switch" :class="{ 'switch-active': switchLanguageValue }" @click="switchLanguageValue = !switchLanguageValue">
+			<SwitchSvg />
 		</button>
 	</div>
 </template>
 
 <script setup>
 import { useI18n } from 'vue-i18n';
+import SwitchSvg from '@/components/svg/SwitchSvg.vue';
 
 const { locale, availableLocales } = useI18n();
+const switchLanguageValue = ref(false);
+const route = useRoute();
+const router = useRouter();
 
-const switchLanguage = (newLocale) => {
-	locale.value = newLocale;
+const fallbackLocales = [
+	{ code: 'en', name: 'English' },
+	{ code: 'fr', name: 'Français' },
+	{ code: 'zh', name: '中文' },
+	{ code: 'no', name: 'Norsk' },
+	{ code: 'sv', name: 'Svenska' },
+	{ code: 'ja', name: '日本語' },
+	{ code: 'es', name: 'Español' },
+];
+
+const locales = computed(() => {
+	const allLocales = availableLocales.value && availableLocales.value.length > 0 ? availableLocales.value : fallbackLocales;
+
+	const currentLocale = locale.value;
+	const activeLocale = allLocales.find((l) => l.code === currentLocale);
+	const otherLocales = allLocales.filter((l) => l.code !== currentLocale);
+
+	return activeLocale ? [activeLocale, ...otherLocales] : allLocales;
+});
+
+const switchLanguage = async (newLocale) => {
+	const currentPath = route.path;
+	const pathWithoutLocale = currentPath.replace(/^\/[a-z]{2}\//, '/');
+
+	if (newLocale === 'en') {
+		await navigateTo(pathWithoutLocale);
+	} else {
+		await navigateTo(`/${newLocale}${pathWithoutLocale}`);
+	}
 };
 </script>
 
-<style scoped>
-.language-switcher {
+<style scoped lang="scss">
+.language-switcher__wrapper {
 	display: flex;
-	gap: 0.5rem;
-}
 
-.language-btn {
-	padding: 0.5rem 1rem;
-	border: 1px solid #ccc;
-	background: white;
-	cursor: pointer;
-	border-radius: 4px;
-	transition: all 0.2s;
-}
+	.language-switcher {
+		display: flex;
+		flex-direction: column;
+		gap: 8rem;
 
-.language-btn:hover {
-	background: #f5f5f5;
-}
+		.language-btn {
+			pointer-events: all;
+			@include switzer(600, normal);
+			color: $black;
+			font-size: 12rem;
+			transition: opacity 0.3s linear;
+			opacity: 0;
 
-.language-btn.active {
-	background: #007bff;
-	color: white;
-	border-color: #007bff;
+			&:hover,
+			&.active {
+				opacity: 1 !important;
+			}
+
+			&.switch-active {
+				opacity: 0.2;
+			}
+		}
+	}
+
+	.language-switcher__switch {
+		cursor: pointer;
+		width: 15rem;
+		height: 15rem;
+		transform: rotate(-90deg);
+		transition: transform 0.3s $out-quad;
+
+		&.switch-active {
+			transform: rotate(0deg);
+		}
+	}
 }
 </style>

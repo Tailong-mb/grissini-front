@@ -2,7 +2,7 @@
 	<header class="header container">
 		<div class="header__logo col-start-1 col-end-4 tb:col-start-1 tb:col-end-3">
 			<NuxtLink to="/">
-				<img :src="logo" alt="Logo" />
+				<LogoSvg />
 			</NuxtLink>
 		</div>
 		<div class="header__lang col-start-4 col-end-5 tb:col-start-10 tb:col-end-11">
@@ -17,7 +17,7 @@
 	</header>
 </template>
 <script setup>
-import logo from '/static/images/logo.png';
+import LogoSvg from '@/components/svg/LogoSvg.vue';
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 
 const { locale } = useI18n();
@@ -31,8 +31,7 @@ onMounted(async () => {
 <style lang="scss" scoped>
 .header {
 	position: fixed;
-	top: 0;
-	left: 0;
+	top: 8rem;
 	z-index: 100;
 	pointer-events: none;
 
