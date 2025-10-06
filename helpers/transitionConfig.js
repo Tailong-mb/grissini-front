@@ -15,12 +15,12 @@ const pageTransition = {
 				done();
 			},
 		})
-			.fromTo(el, { alpha: 0 }, { alpha: 1, duration: 1 })
+			.fromTo(el, { alpha: 0 }, { alpha: 1, duration: 0.3 })
 			.play();
 	},
 	onLeave: (el, done) => {
 		toggleTransitionComplete(false);
-		gsap.timeline({ paused: true, onComplete: done }).to(el, { alpha: 0, duration: 1 }).play();
+		gsap.timeline({ paused: true, onComplete: done }).to(el, { alpha: 0, duration: 0.3 }).play();
 	},
 };
 

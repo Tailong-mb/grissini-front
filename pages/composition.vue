@@ -21,12 +21,7 @@
 import { ref, onMounted } from 'vue';
 import { useSanityComposition } from '@/composables/useSanityComposition';
 import { useI18n } from 'vue-i18n';
-import transitionConfig from '@/helpers/transitionConfig';
 import PartitionSvg from '@/components/svg/PartitionSvg.vue';
-
-definePageMeta({
-	transition: transitionConfig,
-});
 
 const { locale } = useI18n();
 

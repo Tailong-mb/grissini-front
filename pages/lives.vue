@@ -1,12 +1,12 @@
 <template>
 	<div class="lives-page">
 		<div class="background-wrapper">
-			<div v-for="(album, index) in albums" :key="album.id" class="album-image" :class="{ hover: hoverAlbum === index }" :ref="albumImageRefs">
+			<div v-for="(album, index) in displayedAlbums" :key="album.id" class="album-image" :class="{ hover: hoverAlbum === index }" :ref="albumImageRefs">
 				<img :src="album.imageUrl" :alt="album.title" />
 			</div>
 		</div>
 		<div class="container album-container">
-			<a v-for="(album, index) in albums" :key="album.id" class="col-start-1 col-end-6 album-item" :class="[classes[index % classes.length]]" :ref="albumRefs" :href="album.link" target="_blank" rel="noopener noreferrer" @mouseenter="hoverAlbum = index" @mouseleave="hoverAlbum = null">
+			<a v-for="(album, index) in displayedAlbums" :key="album.id" class="col-start-1 col-end-6 album-item" :class="[classes[index % classes.length]]" :ref="albumRefs" :href="album.link" target="_blank" rel="noopener noreferrer" @mouseenter="hoverAlbum = index" @mouseleave="hoverAlbum = null">
 				<ScrambleText
 					:ref="
 						(el) => {
@@ -33,17 +33,17 @@
 				</div>
 			</a>
 		</div>
+		<div class="pagination" v-if="isDesktop && totalPages > 1">
+			<div class="pagination-pages">
+				<button v-for="page in totalPages" :key="page" class="pagination-page" :class="{ active: currentPage === page }" @click="goToPage(page)"></button>
+			</div>
+		</div>
 	</div>
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, nextTick, ref } from 'vue';
-import transitionConfig from '@/helpers/transitionConfig';
+import { onMounted, onUnmounted, nextTick, ref, computed, watch } from 'vue';
 import { gsap } from 'gsap';
-
-definePageMeta({
-	transition: transitionConfig,
-});
 
 const classes = ['tb:col-start-2 tb:col-end-4 dk:col-start-2 dk:col-end-4', ' tb:col-start-6 tb:col-end-8 dk:col-start-6 dk:col-end-8', ' tb:col-start-10 tb:col-end-12 dk:col-start-10 dk:col-end-12'];
 
@@ -56,6 +56,21 @@ const albumRefs = ref([]);
 const scrambleTextRefs = ref({});
 const hoverAlbum = ref(null);
 const scrollTriggers = ref([]);
+const isDesktop = ref(false);
+const currentPage = ref(1);
+const pageSize = 12; // desktop only
+
+const totalPages = computed(() => {
+	if (!albums.value) return 1;
+	return Math.max(1, Math.ceil(albums.value.length / pageSize));
+});
+
+const displayedAlbums = computed(() => {
+	if (!albums.value) return [];
+	if (!isDesktop.value) return albums.value;
+	const start = (currentPage.value - 1) * pageSize;
+	return albums.value.slice(start, start + pageSize);
+});
 
 const formatEventDate = (dateString) => {
 	const isoLike = dateString?.replace(' ', 'T');
@@ -156,6 +171,37 @@ onUnmounted(() => {
 		trigger.kill();
 	});
 });
+
+const handleResize = () => {
+	// match tablet breakpoint from styles if available; otherwise use 1024px as desktop
+	isDesktop.value = window.matchMedia('(min-width: 1024px)').matches;
+	if (!isDesktop.value) {
+		currentPage.value = 1;
+	}
+};
+
+const resetParallax = () => {
+	scrollTriggers.value.forEach((trigger) => trigger.kill());
+	scrollTriggers.value = [];
+	setTimeout(() => {
+		createParallax();
+	}, 50);
+};
+
+watch([displayedAlbums, isDesktop], () => {
+	resetParallax();
+});
+
+const goToPage = (page) => {
+	if (page >= 1 && page <= totalPages.value) {
+		currentPage.value = page;
+	}
+};
+
+if (process.client) {
+	window.addEventListener('resize', handleResize);
+	handleResize();
+}
 </script>
 
 <style lang="scss" scoped>
@@ -164,7 +210,8 @@ onUnmounted(() => {
 	min-height: 100vh;
 	width: 100%;
 	display: flex;
-	align-items: center;
+	justify-content: center;
+	flex-direction: column;
 	padding: 150px 0;
 
 	@include tablet {
@@ -238,6 +285,39 @@ onUnmounted(() => {
 		}
 	}
 
-	// tag containers removed
+	.pagination {
+		position: absolute;
+		bottom: 11vh;
+		width: 100%;
+		display: none;
+		align-items: center;
+		justify-content: center;
+		gap: 8rem;
+
+		@include tablet {
+			display: flex;
+		}
+
+		.pagination-pages {
+			display: flex;
+			gap: 6rem;
+		}
+
+		.pagination-page {
+			height: 2rem;
+			width: 20rem;
+			background-color: $black;
+			opacity: 0.2;
+			transition:
+				opacity 0.3s linear,
+				width 0.3s $out-quad;
+
+			&.active,
+			&:hover {
+				opacity: 1;
+				width: 38rem;
+			}
+		}
+	}
 }
 </style>

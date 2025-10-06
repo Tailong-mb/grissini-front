@@ -137,6 +137,7 @@ defineExpose({
 			color: #999999;
 			filter: blur(8px);
 			opacity: 0;
+			transition: color 0.3s linear;
 		}
 
 		p {
@@ -148,6 +149,7 @@ defineExpose({
 			color: #999999;
 			filter: blur(8px);
 			opacity: 0;
+			transition: color 0.3s linear;
 		}
 	}
 
@@ -161,6 +163,7 @@ defineExpose({
 		text-transform: uppercase;
 		filter: blur(8px);
 		opacity: 0;
+		transition: color 0.3s linear;
 	}
 }
 </style>
