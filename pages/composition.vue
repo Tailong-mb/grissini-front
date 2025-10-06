@@ -1,7 +1,19 @@
 <template>
-	<div>
-		<h1>Composition Page</h1>
-		<p>Check console for data logs</p>
+	<div id="page-composition" class="container">
+		<div class="left-part col-start-1 col-end-5 tb:col-start-3 tb:col-end-6">
+			<h1>GRISSINI</h1>
+			<p>{{ compositionData?.description }}</p>
+			<a href="mailto:{{ compositionData?.email }}">{{ compositionData?.email }}</a>
+		</div>
+		<div class="right-part col-start-1 col-end-5 tb:col-start-8 tb:col-end-11">
+			<PartitionSvg />
+			<div class="right-part__items">
+				<div class="right-part__item" v-for="item in compositionData?.items" :key="item._key">
+					<h2>{{ item?.title }}</h2>
+					<p>{{ item?.description }}</p>
+				</div>
+			</div>
+		</div>
 	</div>
 </template>
 
@@ -9,6 +21,12 @@
 import { ref, onMounted } from 'vue';
 import { useSanityComposition } from '@/composables/useSanityComposition';
 import { useI18n } from 'vue-i18n';
+import transitionConfig from '@/helpers/transitionConfig';
+import PartitionSvg from '@/components/svg/PartitionSvg.vue';
+
+definePageMeta({
+	transition: transitionConfig,
+});
 
 const { locale } = useI18n();
 
@@ -37,3 +55,117 @@ onMounted(async () => {
 	await loadCompositionData();
 });
 </script>
+
+<style lang="scss" scoped>
+#page-composition {
+	position: relative;
+	padding: 30vh 0;
+
+	.left-part {
+		@include tablet {
+			position: fixed;
+			top: 30vh;
+			width: 350rem;
+		}
+
+		h1 {
+			@include ppeditorial(200, normal);
+			font-size: 65rem;
+
+			@include tablet {
+				font-size: 80rem;
+			}
+
+			@include desktop {
+				font-size: 90rem;
+			}
+		}
+
+		p {
+			@include switzer(500, normal);
+			font-size: 12rem;
+			opacity: 0.34;
+			margin-top: 70rem;
+
+			@include tablet {
+				margin-top: 80rem;
+			}
+		}
+
+		a {
+			position: relative;
+			padding-bottom: 2rem;
+			width: fit-content;
+			display: block;
+			@include switzer(500, normal);
+			font-size: 12rem;
+			text-transform: uppercase;
+			color: $black;
+			margin-top: 70rem;
+
+			@include tablet {
+				margin-top: 80rem;
+			}
+
+			&:hover {
+				&::after {
+					transform: scale3d(1, 1, 1);
+					transform-origin: left center;
+				}
+			}
+
+			&::after {
+				content: '';
+				position: absolute;
+				bottom: 0;
+				left: 0;
+				width: 100%;
+				height: 1px;
+				background-color: $black;
+				transform: scale3d(0, 1, 1);
+				transform-origin: right center;
+				transition:
+					transform 0.5s $out-cubic,
+					opacity 0.3s linear;
+			}
+		}
+	}
+
+	.right-part {
+		position: relative;
+		margin-top: 120rem;
+
+		@include tablet {
+			margin-top: 0rem;
+		}
+
+		.right-part__items {
+			margin-top: 60rem;
+			display: flex;
+			flex-direction: column;
+			gap: 60rem;
+
+			@include tablet {
+				margin-top: 70rem;
+			}
+
+			.right-part__item {
+				h2 {
+					@include switzer(500, normal);
+					font-size: 12rem;
+					text-transform: uppercase;
+					color: $black;
+				}
+
+				p {
+					margin-top: 20rem;
+					@include ppeditorial(400, normal);
+					font-size: 18rem;
+					color: $black;
+					opacity: 0.34;
+				}
+			}
+		}
+	}
+}
+</style>

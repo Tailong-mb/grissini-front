@@ -81,6 +81,7 @@ onMounted(loadMenuData);
 	.header__menu {
 		position: relative;
 		pointer-events: all;
+		height: fit-content;
 
 		&:hover {
 			span {

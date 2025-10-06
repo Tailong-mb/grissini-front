@@ -1,6 +1,7 @@
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
+import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin';
 import { CustomEase } from 'gsap/CustomEase';
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, CustomEase);
