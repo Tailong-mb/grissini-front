@@ -8,7 +8,7 @@
 		<div class="header__lang col-start-4 col-end-5 tb:col-start-10 tb:col-end-11">
 			<LanguageSwitcher />
 		</div>
-		<button class="header__newsletter tb:col-start-11 tb:col-end-12">
+		<button class="header__newsletter tb:col-start-11 tb:col-end-12" @click="handleOpenNewsletter">
 			<span>{{ data?.newsletterText }}</span>
 		</button>
 		<button class="header__menu col-start-5 col-end-6 tb:col-start-12 tb:col-end-13">
@@ -21,19 +21,27 @@ import LogoSvg from '@/components/svg/LogoSvg.vue';
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 
 const { locale } = useI18n();
+const { openNewsletter } = useNewsletter();
 const rawData = ref(null);
+
+// Debug: wrapper pour la fonction openNewsletter
+const handleOpenNewsletter = () => {
+	console.log('Header: Opening newsletter');
+	openNewsletter();
+};
 
 // Computed property to get localized menu data
 const data = computed(() => {
 	if (!rawData.value) return null;
 
 	return {
-		menuText: rawData.value.menuText?.[locale.value] || rawData.value.menuText?.en || rawData.value.menuText,
-		menuClose: rawData.value.menuClose?.[locale.value] || rawData.value.menuClose?.en || rawData.value.menuClose,
-		description: rawData.value.description?.[locale.value] || rawData.value.description?.en || rawData.value.description,
-		newsletterText: rawData.value.newsletterText?.[locale.value] || rawData.value.newsletterText?.en || rawData.value.newsletterText,
-		contactText: rawData.value.contactText?.[locale.value] || rawData.value.contactText?.en || rawData.value.contactText,
-		mail: rawData.value.mail,
+		menuText: rawData.value.menu?.menuText?.[locale.value] || rawData.value.menu?.menuText?.en || rawData.value.menu?.menuText,
+		menuClose: rawData.value.menu?.menuClose?.[locale.value] || rawData.value.menu?.menuClose?.en || rawData.value.menu?.menuClose,
+		description: rawData.value.menu?.description?.[locale.value] || rawData.value.menu?.description?.en || rawData.value.menu?.description,
+		newsletterText: rawData.value.menu?.newsletterText?.[locale.value] || rawData.value.menu?.newsletterText?.en || rawData.value.menu?.newsletterText,
+		contactText: rawData.value.menu?.contactText?.[locale.value] || rawData.value.menu?.contactText?.en || rawData.value.menu?.contactText,
+		mail: rawData.value.menu?.mail,
+		socialLinks: rawData.value.socialMedia?.socialLinks || [],
 	};
 });
 

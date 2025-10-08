@@ -14,12 +14,15 @@ const data = computed(() => {
 	if (!rawData.value) return null;
 
 	return {
-		menuText: rawData.value.menuText?.[locale.value] || rawData.value.menuText?.en || rawData.value.menuText,
-		menuClose: rawData.value.menuClose?.[locale.value] || rawData.value.menuClose?.en || rawData.value.menuClose,
-		description: rawData.value.description?.[locale.value] || rawData.value.description?.en || rawData.value.description,
-		newsletterText: rawData.value.newsletterText?.[locale.value] || rawData.value.newsletterText?.en || rawData.value.newsletterText,
-		contactText: rawData.value.contactText?.[locale.value] || rawData.value.contactText?.en || rawData.value.contactText,
-		mail: rawData.value.mail,
+		menuText: rawData.value.menu?.menuText?.[locale.value] || rawData.value.menu?.menuText?.en || rawData.value.menu?.menuText,
+		menuClose: rawData.value.menu?.menuClose?.[locale.value] || rawData.value.menu?.menuClose?.en || rawData.value.menu?.menuClose,
+		description: rawData.value.menu?.description?.[locale.value] || rawData.value.menu?.description?.en || rawData.value.menu?.description,
+		newsletterText: rawData.value.menu?.newsletterText?.[locale.value] || rawData.value.menu?.newsletterText?.en || rawData.value.menu?.newsletterText,
+		descriptionNewsletter: rawData.value.menu?.descriptionNewsletter?.[locale.value] || rawData.value.menu?.descriptionNewsletter?.en || rawData.value.menu?.descriptionNewsletter,
+		contactText: rawData.value.menu?.contactText?.[locale.value] || rawData.value.menu?.contactText?.en || rawData.value.menu?.contactText,
+		mail: rawData.value.menu?.mail,
+		emailLabel: rawData.value.menu?.emailLabel?.[locale.value] || rawData.value.menu?.emailLabel?.en || rawData.value.menu?.emailLabel,
+		socialLinks: rawData.value.socialMedia?.socialLinks || [],
 	};
 });
 
@@ -36,7 +39,9 @@ const loadMenuData = async () => {
 	}
 };
 
-onMounted(loadMenuData);
+onMounted(async () => {
+	await loadMenuData();
+});
 </script>
 
 <style lang="scss" scoped>
@@ -47,7 +52,7 @@ onMounted(loadMenuData);
 	display: flex;
 	justify-content: space-between;
 	width: calc(100% - 16rem);
-	z-index: 100;
+	z-index: 200;
 	pointer-events: none;
 
 	button {

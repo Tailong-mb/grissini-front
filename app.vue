@@ -1,6 +1,7 @@
 <template>
-	<NuxtPage :transition="pageTransition" />
 	<Header />
+	<Newsletter />
+	<NuxtPage :transition="pageTransition" />
 	<Navigation />
 	<NavigationBottom />
 </template>
@@ -9,6 +10,7 @@
 import Header from '@/components/Header.vue';
 import Navigation from '@/components/Navigation.vue';
 import NavigationBottom from '@/components/NavigationBottom.vue';
+import Newsletter from '@/components/Newsletter.vue';
 import pageTransition from '@/helpers/transitionConfig';
 </script>
 
@@ -27,7 +29,7 @@ html {
 	}
 
 	@include large {
-		font-size: calc(min(1px, 100vh / 800));
+		font-size: calc(max(100vw / 1440, 1px));
 	}
 }
 </style>
