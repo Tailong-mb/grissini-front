@@ -1,46 +1,24 @@
 <template>
-	<div>
-		<h1>Shop Page</h1>
-		<p>Check console for data logs</p>
-
-		<!-- Category filters -->
-		<div v-if="shopData?.categories">
-			<h2>Categories:</h2>
-			<button
-				v-for="category in shopData.categories"
-				:key="category.key"
-				@click="loadProducts(category.key)"
-				:style="{
-					backgroundColor: selectedCategory === category.key ? '#007bff' : '#f8f9fa',
-					color: selectedCategory === category.key ? 'white' : 'black',
-					padding: '10px 20px',
-					margin: '5px',
-					border: '1px solid #ccc',
-					cursor: 'pointer',
-				}"
-			>
+	<div class="products-page container">
+		<div v-if="shopData?.categories" class="categories-wrapper col-start-1 col-end-6 tb:col-end-13">
+			<button v-for="(category, index) in shopData.categories" :key="category.key" @click="loadProducts(category.key)" :class="{ active: selectedCategory === category.key }">
 				{{ category.label }}
+				<span class="category-count" v-if="index !== 0">({{ category.count || 0 }})</span>
 			</button>
 		</div>
-
-		<!-- Products -->
-		<div v-if="products">
-			<h2>Products ({{ selectedCategory }}): {{ products.length }} found</h2>
-			<div v-for="product in products" :key="product._id" style="border: 1px solid #ddd; padding: 15px; margin: 10px 0">
-				<h3>{{ product.translations?.title || product.title }}</h3>
-				<p><strong>Description:</strong> {{ product.translations?.description || 'No description' }}</p>
-				<p><strong>Price:</strong> {{ product.priceRange?.minVariantPrice }} - {{ product.priceRange?.maxVariantPrice }}</p>
-				<p><strong>Images:</strong> {{ product.images?.length || 0 }}</p>
-				<p><strong>Variants:</strong> {{ product.variants?.length || 0 }}</p>
-				<p><strong>Product Type:</strong> {{ product.productType || 'No type' }}</p>
-				<p><strong>Vendor:</strong> {{ product.vendor || 'No vendor' }}</p>
-				<p><strong>Add to Cart Text:</strong> {{ product.translations?.addToCartText || 'Add to Cart' }}</p>
-				<button @click="handleAddToCart(product)" :disabled="!product.variants?.length" style="background: #007bff; color: white; padding: 10px 20px; border: none; cursor: pointer; margin-top: 10px">
-					{{ product.translations?.addToCartText || 'Add to Cart' }}
+		<div v-for="(product, index) in products" :key="product._id" class="product-card col-start-1 col-end-6" :class="gridClass[index % gridClass.length]">
+			<div class="image-container">
+				<img :src="product.images?.[0]?.asset?.url || product.previewImageUrl || '/placeholder-image.jpg'" :alt="product.translations?.title || product.title" />
+			</div>
+			<div class="content-container">
+				<h2>{{ product.translations?.title || product.title }}</h2>
+				<p>{{ formatPrice(product.priceRange?.minVariantPrice) }}</p>
+				<button @click="handleAddToCart(product)" :disabled="!product.variants?.length || product.status !== 'active'">
+					{{ product.translations?.discoverProductText || 'Découvrir' }}
 				</button>
 			</div>
 		</div>
-
+		x
 		<div v-if="loading">Loading products...</div>
 		<div v-if="error">Error: {{ error }}</div>
 	</div>
@@ -54,6 +32,8 @@ import { useI18n } from 'vue-i18n';
 
 const { locale } = useI18n();
 
+const gridClass = ['tb:col-end-1 tb:col-start-3', 'tb:col-end-4 tb:col-start-6', 'tb:col-end-7 tb:col-start-9', 'tb:col-end-10 tb:col-start-13'];
+
 const shopData = ref(null);
 const products = ref(null);
 const selectedCategory = ref('all');
@@ -65,10 +45,6 @@ const loadShopData = async () => {
 	error.value = null;
 	try {
 		shopData.value = await useSanityShop(locale.value);
-		console.log('=== SHOP PAGE DATA ===');
-		console.log('Locale:', locale.value);
-		console.log('Shop Data:', shopData.value);
-		console.log('======================');
 	} catch (err) {
 		error.value = err.message;
 		console.error('Shop page error:', err);
@@ -81,13 +57,34 @@ const loadProducts = async (category = 'all') => {
 	selectedCategory.value = category;
 	try {
 		products.value = await useSanityProductsWithTranslations(locale.value, category);
-		console.log('=== PRODUCTS DATA ===');
-		console.log('Category:', category);
-		console.log('Products:', products.value);
-		console.log('=====================');
 	} catch (err) {
 		console.error('Products loading error:', err);
 	}
+};
+
+// Formater le prix
+const formatPrice = (priceData) => {
+	if (!priceData) return 'Prix non disponible';
+
+	// Si c'est déjà un objet avec amount et currencyCode
+	if (typeof priceData === 'object' && priceData.amount && priceData.currencyCode) {
+		const amount = parseFloat(priceData.amount);
+		return new Intl.NumberFormat('fr-FR', {
+			style: 'currency',
+			currency: priceData.currencyCode,
+		}).format(amount);
+	}
+
+	// Si c'est juste un string/number
+	if (typeof priceData === 'string' || typeof priceData === 'number') {
+		const amount = parseFloat(priceData);
+		return new Intl.NumberFormat('fr-FR', {
+			style: 'currency',
+			currency: 'EUR', // Devise par défaut
+		}).format(amount);
+	}
+
+	return 'Prix non disponible';
 };
 
 const handleAddToCart = async (product) => {
@@ -113,3 +110,104 @@ onMounted(async () => {
 	await loadProducts('all');
 });
 </script>
+
+<style scoped lang="scss">
+.products-page {
+	position: relative;
+	padding: 120rem 0;
+
+	.categories-wrapper {
+		display: flex;
+		gap: 8rem;
+		margin-bottom: 50rem;
+
+		button {
+			display: flex;
+			align-items: center;
+			gap: 4rem;
+			@include switzer(600, normal);
+			font-size: 12rem;
+			color: #747474;
+			padding: 10rem;
+			border: solid 1px #acacac;
+			transition:
+				border-color 0.3s linear,
+				color 0.3s linear,
+				background-color 0.3s linear;
+
+			&.active {
+				background-color: $black;
+				color: $white;
+				border-color: $black;
+
+				.category-count {
+					color: $white;
+				}
+			}
+
+			.category-count {
+				@include switzer(600, normal);
+				font-size: 6rem;
+				color: $black;
+				transition: color 0.3s linear;
+			}
+		}
+	}
+
+	.product-card {
+		display: flex;
+		gap: 9rem;
+		justify-content: space-between;
+		margin-bottom: 50rem;
+
+		@include tablet {
+			margin-bottom: 100;
+		}
+
+		.image-container {
+			width: calc(50% - 9rem);
+			height: 100%;
+			img {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+			}
+		}
+
+		.content-container {
+			width: calc(50% - 9rem);
+			h2 {
+				@include switzer(600, normal);
+				font-size: 16rem;
+				color: $black;
+				margin-bottom: 6rem;
+			}
+			p {
+				@include switzer(500, normal);
+				font-size: 12rem;
+				color: $black;
+				margin-bottom: 6rem;
+				opacity: 0.4;
+			}
+
+			button {
+				@include switzer(500, normal);
+				font-size: 12rem;
+				padding: 10rem 20rem;
+				background-color: $black;
+				color: $white;
+				border: solid 1px $black;
+				cursor: pointer;
+				transition:
+					background-color 0.3s linear,
+					color 0.3s linear;
+
+				&:hover {
+					background-color: $white;
+					color: $black;
+				}
+			}
+		}
+	}
+}
+</style>

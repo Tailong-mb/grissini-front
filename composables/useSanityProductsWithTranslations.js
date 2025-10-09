@@ -2,11 +2,11 @@ import sanity from '@/utils/sanity';
 
 export const useSanityProductsWithTranslations = async (locale = 'en', category = 'all', page = 1, limit = 12) => {
 	// Construire la requête de filtrage
-	let filterQuery = `*[_type == "product" && defined(store.status) && store.status == 'active' && !store.isDeleted`;
+	let filterQuery = `*[_type == "product" && defined(store) && !store.isDeleted`;
 
 	// Ajouter le filtre de catégorie
 	if (category && category !== 'all') {
-		filterQuery += ` && store.productType == "${category}"`;
+		filterQuery += ` && lower(store.productType) == "${category}"`;
 	}
 
 	filterQuery += `]`;
@@ -28,7 +28,8 @@ export const useSanityProductsWithTranslations = async (locale = 'en', category 
       "title": title.${locale},
       "description": description.${locale},
       "shortDescription": shortDescription.${locale},
-      "addToCartText": addToCartText.${locale}
+      "addToCartText": addToCartText.${locale},
+      "discoverProductText": discoverProductText.${locale}
     },
     "images": images[]{
       asset->{
@@ -68,7 +69,8 @@ export const useSanityProductWithTranslations = async (slug, locale = 'en') => {
       "title": title.${locale},
       "description": description.${locale},
       "shortDescription": shortDescription.${locale},
-      "addToCartText": addToCartText.${locale}
+      "addToCartText": addToCartText.${locale},
+      "discoverProductText": discoverProductText.${locale}
     },
     "images": images[]{
       asset->{
