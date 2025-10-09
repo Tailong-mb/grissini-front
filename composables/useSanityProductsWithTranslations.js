@@ -56,7 +56,7 @@ export const useSanityProductsWithTranslations = async (locale = 'en', category 
 
 // Composable pour récupérer un produit spécifique avec traductions
 export const useSanityProductWithTranslations = async (slug, locale = 'en') => {
-	const query = `*[_type == "product" && store.slug.current == $slug && store.status == "active" && !store.isDeleted][0]{
+	const query = `*[_type == "product" && store.slug.current == $slug && !store.isDeleted][0]{
     _id,
     "title": store.title,
     "slug": store.slug.current,

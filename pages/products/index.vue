@@ -13,9 +13,9 @@
 			<div class="content-container">
 				<h2>{{ product.translations?.title || product.title }}</h2>
 				<p>{{ formatPrice(product.priceRange?.minVariantPrice) }}</p>
-				<button @click="handleAddToCart(product)" :disabled="!product.variants?.length || product.status !== 'active'">
+				<NuxtLink :to="`/products/${product.slug}`" class="discover-link">
 					{{ product.translations?.discoverProductText || 'Découvrir' }}
-				</button>
+				</NuxtLink>
 			</div>
 		</div>
 		x
@@ -85,24 +85,6 @@ const formatPrice = (priceData) => {
 	}
 
 	return 'Prix non disponible';
-};
-
-const handleAddToCart = async (product) => {
-	if (!product.variants?.length) {
-		console.error('No variants available for this product');
-		return;
-	}
-
-	try {
-		// Utiliser votre système d'ajout au panier existant
-		const { addToCart } = useCart();
-		const firstVariant = product.variants[0];
-
-		await addToCart(firstVariant.shopifyId, 1);
-		console.log('Product added to cart:', product.translations?.title || product.title);
-	} catch (err) {
-		console.error('Error adding to cart:', err);
-	}
 };
 
 onMounted(async () => {
@@ -190,14 +172,15 @@ onMounted(async () => {
 				opacity: 0.4;
 			}
 
-			button {
+			.discover-link {
 				@include switzer(500, normal);
 				font-size: 12rem;
 				padding: 10rem 20rem;
 				background-color: $black;
 				color: $white;
 				border: solid 1px $black;
-				cursor: pointer;
+				text-decoration: none;
+				display: inline-block;
 				transition:
 					background-color 0.3s linear,
 					color 0.3s linear;

@@ -68,18 +68,23 @@ const loadProduct = async () => {
 	try {
 		const handle = route.params.handle;
 		const productData = await useSanityProductWithTranslations(handle, locale.value);
-		product.value = productData;
-
-		// Sélectionner la première variante par défaut
-		if (productData.variants?.length > 0) {
-			selectedVariant.value = productData.variants[0];
-		}
 
 		console.log('=== PRODUCT DETAIL PAGE DATA ===');
 		console.log('Handle:', handle);
 		console.log('Locale:', locale.value);
 		console.log('Product Data:', productData);
 		console.log('================================');
+
+		if (!productData) {
+			throw new Error('Product not found');
+		}
+
+		product.value = productData;
+
+		// Sélectionner la première variante par défaut
+		if (productData.variants?.length > 0) {
+			selectedVariant.value = productData.variants[0];
+		}
 	} catch (err) {
 		error.value = err.message;
 		console.error('Product detail page error:', err);
