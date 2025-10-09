@@ -1,6 +1,7 @@
 <template>
 	<Header />
 	<Newsletter />
+	<Cart />
 	<NuxtPage :transition="pageTransition" />
 	<Navigation />
 	<NavigationBottom />
@@ -11,6 +12,7 @@ import Header from '@/components/Header.vue';
 import Navigation from '@/components/Navigation.vue';
 import NavigationBottom from '@/components/NavigationBottom.vue';
 import Newsletter from '@/components/Newsletter.vue';
+import Cart from '@/components/Cart.vue';
 import pageTransition from '@/helpers/transitionConfig';
 </script>
 

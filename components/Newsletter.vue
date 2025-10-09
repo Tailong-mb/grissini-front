@@ -2,7 +2,10 @@
 	<div class="newsletter-popin container" :class="{ active: isOpen }">
 		<div class="newsletter-popin__left tb:col-start-1 tb:col-end-8" :class="{ active: isOpen }" @click="closeNewsletter"></div>
 		<div class="newsletter-popin__right col-start-1 col-end-6 tb:col-start-8 tb:col-end-13">
-			<h1 :class="{ active: isOpen }">{{ data?.newsletterText }}</h1>
+			<button class="newsletter-popin__right__close" :class="{ active: isOpen }" @click="closeNewsletter">
+				{{ data?.menuClose }}
+			</button>
+			<h2 :class="{ active: isOpen }">{{ data?.newsletterText }}</h2>
 			<p :class="{ active: isOpen }">{{ data?.descriptionNewsletter }}</p>
 			<form :class="{ active: isOpen, email: email.length > 0 }">
 				<input type="email" :placeholder="data?.emailLabel" v-model="email" />
@@ -37,6 +40,7 @@ const data = computed(() => {
 		mail: rawData.value.menu?.mail,
 		emailLabel: rawData.value.menu?.emailLabel?.[locale.value] || rawData.value.menu?.emailLabel?.en || rawData.value.menu?.emailLabel,
 		socialLinks: rawData.value.socialMedia?.socialLinks || [],
+		menuClose: rawData.value.menu?.menuClose?.[locale.value] || rawData.value.menu?.menuClose?.en || rawData.value.menu?.menuClose,
 	};
 });
 
@@ -63,10 +67,11 @@ onMounted(async () => {
 	z-index: 150;
 	margin: 0;
 	transform: translate3d(100%, 0, 0);
-	transition: transform 1.2s $out-cubic;
+	transition: transform 2s $out-cubic;
 
 	&.active {
 		transform: translate3d(0, 0, 0);
+		transition: transform 1.2s $out-cubic;
 	}
 
 	&__left {
@@ -87,6 +92,7 @@ onMounted(async () => {
 	}
 
 	&__right {
+		position: relative;
 		background-color: $white;
 		padding: 0 8rem;
 		height: 100%;
@@ -95,7 +101,32 @@ onMounted(async () => {
 			padding: 0 118rem;
 		}
 
-		h1 {
+		&__close {
+			position: absolute;
+			top: 8rem;
+			right: 8rem;
+			background: none;
+			border: none;
+			padding: 0;
+			margin: 0;
+			cursor: pointer;
+			color: $black;
+			font-size: 12rem;
+			text-transform: uppercase;
+			transition: opacity 0.3s linear;
+			@include switzer(600, normal);
+			opacity: 0;
+
+			&.active {
+				opacity: 1;
+			}
+
+			&:hover {
+				opacity: 0.7;
+			}
+		}
+
+		h2 {
 			@include switzer(600, normal);
 			color: $black;
 			text-transform: uppercase;

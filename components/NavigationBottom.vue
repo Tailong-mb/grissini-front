@@ -1,12 +1,13 @@
 <template>
 	<div class="navigation-bottom">
-		<button>{{ data?.newsletterText }}</button>
+		<button @click="openNewsletter">{{ data?.newsletterText }}</button>
 		<a :href="`mailto:${data?.mail}`">{{ data?.contactText }}</a>
 	</div>
 </template>
 
 <script setup>
 const { locale } = useI18n();
+const { openNewsletter } = useNewsletter();
 const rawData = ref(null);
 
 // Computed property to get localized menu data
@@ -14,14 +15,9 @@ const data = computed(() => {
 	if (!rawData.value) return null;
 
 	return {
-		menuText: rawData.value.menu?.menuText?.[locale.value] || rawData.value.menu?.menuText?.en || rawData.value.menu?.menuText,
-		menuClose: rawData.value.menu?.menuClose?.[locale.value] || rawData.value.menu?.menuClose?.en || rawData.value.menu?.menuClose,
-		description: rawData.value.menu?.description?.[locale.value] || rawData.value.menu?.description?.en || rawData.value.menu?.description,
 		newsletterText: rawData.value.menu?.newsletterText?.[locale.value] || rawData.value.menu?.newsletterText?.en || rawData.value.menu?.newsletterText,
-		descriptionNewsletter: rawData.value.menu?.descriptionNewsletter?.[locale.value] || rawData.value.menu?.descriptionNewsletter?.en || rawData.value.menu?.descriptionNewsletter,
 		contactText: rawData.value.menu?.contactText?.[locale.value] || rawData.value.menu?.contactText?.en || rawData.value.menu?.contactText,
 		mail: rawData.value.menu?.mail,
-		emailLabel: rawData.value.menu?.emailLabel?.[locale.value] || rawData.value.menu?.emailLabel?.en || rawData.value.menu?.emailLabel,
 		socialLinks: rawData.value.socialMedia?.socialLinks || [],
 	};
 });
