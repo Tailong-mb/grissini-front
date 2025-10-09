@@ -8,7 +8,7 @@
 		<div class="header__lang col-start-4 col-end-5 tb:col-start-10 tb:col-end-11">
 			<LanguageSwitcher />
 		</div>
-		<button class="header__newsletter tb:col-start-11 tb:col-end-12" @click="handleOpenNewsletter">
+		<button class="header__newsletter tb:col-start-11 tb:col-end-12" @click="openNewsletter">
 			<span>{{ data?.newsletterText }}</span>
 		</button>
 		<button class="header__menu col-start-5 col-end-6 tb:col-start-12 tb:col-end-13">
@@ -23,12 +23,6 @@ import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 const { locale } = useI18n();
 const { openNewsletter } = useNewsletter();
 const rawData = ref(null);
-
-// Debug: wrapper pour la fonction openNewsletter
-const handleOpenNewsletter = () => {
-	console.log('Header: Opening newsletter');
-	openNewsletter();
-};
 
 // Computed property to get localized menu data
 const data = computed(() => {

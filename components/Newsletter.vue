@@ -27,11 +27,6 @@ const { isOpen, closeNewsletter } = useNewsletter();
 const rawData = ref(null);
 const email = ref('');
 
-// Debug: surveiller les changements de isOpen
-watch(isOpen, (newValue) => {
-	console.log('Newsletter isOpen changed:', newValue);
-});
-
 const data = computed(() => {
 	if (!rawData.value) return null;
 
