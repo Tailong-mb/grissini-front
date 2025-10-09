@@ -1,37 +1,23 @@
 <template>
-	<div>
-		<h1>Product Detail Page</h1>
-		<p>Check console for data logs</p>
-
-		<div v-if="loading">Loading product...</div>
-		<div v-else-if="error">Error: {{ error }}</div>
-		<div v-else-if="product">
-			<h2>{{ product.translations?.title || product.title }}</h2>
-			<p><strong>Description:</strong> {{ product.translations?.description || 'No description' }}</p>
-			<p><strong>Price:</strong> {{ product.priceRange?.minVariantPrice }} - {{ product.priceRange?.maxVariantPrice }}</p>
-			<p><strong>Images:</strong> {{ product.images?.length || 0 }}</p>
-			<p><strong>Variants:</strong> {{ product.variants?.length || 0 }}</p>
-			<p><strong>Product Type:</strong> {{ product.productType || 'No type' }}</p>
-			<p><strong>Vendor:</strong> {{ product.vendor || 'No vendor' }}</p>
-
-			<!-- Variants selection -->
-			<div v-if="product.variants?.length > 1">
-				<h3>Select Variant:</h3>
-				<select v-model="selectedVariant" style="padding: 10px; margin: 10px 0">
-					<option v-for="variant in product.variants" :key="variant._id" :value="variant">{{ variant.title }} - {{ variant.price }}</option>
-				</select>
+	<div class="container product-detail-page">
+		<div class="image-mobile-container col-start-1 col-end-6">
+			<img v-for="image in product?.images" :key="image._id" :src="image.asset.url" :alt="product.translations?.title || product.title" />
+		</div>
+		<div class="content-container col-start-2 col-end-6">
+			<h1>{{ product?.translations?.title || product?.title }}</h1>
+			<p class="description">{{ product?.translations?.description || '' }}</p>
+			<div v-if="product?.variants?.length > 1" class="variant-container">
+				<div class="variant-item" v-for="variant in product?.variants" :key="variant._id" :class="{ active: selectedVariant?.title === variant.title }" @click="selectedVariant = variant">
+					<p>{{ variant.title }}</p>
+				</div>
 			</div>
-
-			<!-- Quantity -->
-			<div>
-				<label>Quantity:</label>
-				<input v-model="quantity" type="number" min="1" style="padding: 5px; margin: 10px" />
-			</div>
-
-			<!-- Add to Cart Button -->
-			<button @click="handleAddToCart" :disabled="!selectedVariant || cartLoading" style="background: #007bff; color: white; padding: 15px 30px; border: none; cursor: pointer; margin-top: 20px; font-size: 16px">
-				{{ cartLoading ? 'Adding...' : product.translations?.addToCartText || 'Add to Cart' }}
+			<p>{{ product?.priceRange?.minVariantPrice }}</p>
+			<button @click="handleAddToCart" :disabled="!selectedVariant || cartLoading" class="button-container">
+				{{ cartLoading ? 'Adding...' : product?.translations?.addToCartText || 'Add to Cart' }}
 			</button>
+		</div>
+		<div class="image-desktop-container tb:col-start-7 tb:col-end-11">
+			<img v-for="image in product?.images" :key="image._id" :src="image.asset.url" :alt="product.translations?.title || product.title" />
 		</div>
 	</div>
 </template>
@@ -43,7 +29,7 @@ import { useI18n } from 'vue-i18n';
 
 const route = useRoute();
 const { locale } = useI18n();
-const { addToCart, loading: cartLoading } = useCart();
+const { addToCart, loading: cartLoading, cart: cartData } = useCart();
 
 const product = ref(null);
 const selectedVariant = ref(null);
@@ -101,13 +87,130 @@ const handleAddToCart = async () => {
 
 	try {
 		await addToCart(selectedVariant.value.shopifyId, quantity.value);
-		console.log('Product added to cart:', product.value.translations?.title || product.value.title);
 	} catch (err) {
 		console.error('Error adding to cart:', err);
 	}
 };
 
-onMounted(() => {
-	loadProduct();
+onMounted(async () => {
+	await loadProduct();
 });
 </script>
+
+<style scoped lang="scss">
+.product-detail-page {
+	position: relative;
+	padding: 16dvh 0;
+
+	@include tablet {
+		padding: 0;
+	}
+
+	.image-mobile-container {
+		display: flex;
+		gap: 8rem;
+		height: 35dvh;
+		flex-wrap: nowrap;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+
+		&::-webkit-scrollbar {
+			display: none;
+		}
+
+		@include tablet {
+			display: none;
+		}
+
+		img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+	}
+	.content-container {
+		margin-top: 10dvh;
+
+		@include tablet {
+			position: fixed;
+			width: 330rem;
+			margin-top: 20vh;
+		}
+
+		h1 {
+			@include switzer(600, normal);
+			font-size: 12rem;
+			color: $black;
+		}
+
+		.description {
+			margin-top: 39rem;
+			@include switzer(500, normal);
+			font-size: 12rem;
+			color: $black;
+			opacity: 0.5;
+		}
+
+		.variant-container {
+			display: flex;
+			gap: 8rem;
+			flex-wrap: wrap;
+			margin-top: 39rem;
+			.variant-item {
+				@include switzer(500, normal);
+				font-size: 12rem;
+				color: $black;
+				padding: 10rem;
+				border: 1px solid $black;
+				cursor: pointer;
+				transition:
+					color 0.3s ease,
+					background-color 0.3s ease;
+
+				&:hover,
+				&.active {
+					background-color: $black;
+					color: $white;
+				}
+			}
+		}
+
+		.button-container {
+			margin-top: 39rem;
+			@include switzer(500, normal);
+			font-size: 12rem;
+			color: $black;
+			padding: 10rem;
+			background-color: $black;
+			color: $white;
+			border: solid 1px $black;
+			cursor: pointer;
+			text-transform: uppercase;
+			transition: all 0.3s ease;
+			&:hover {
+				background-color: $white;
+				color: $black;
+			}
+			&:disabled {
+				opacity: 0.5;
+				cursor: not-allowed;
+			}
+		}
+	}
+
+	.image-desktop-container {
+		display: none;
+		@include tablet {
+			display: flex;
+			flex-direction: column;
+
+			img {
+				width: 100%;
+				height: auto;
+			}
+		}
+	}
+}
+</style>
