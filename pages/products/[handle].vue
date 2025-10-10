@@ -6,12 +6,15 @@
 		<div class="content-container col-start-2 col-end-6">
 			<h1>{{ product?.translations?.title || product?.title }}</h1>
 			<p class="description">{{ product?.translations?.description || '' }}</p>
-			<div v-if="product?.variants?.length > 1" class="variant-container">
-				<div class="variant-item" v-for="variant in product?.variants" :key="variant._id" :class="{ active: selectedVariant?.title === variant.title }" @click="selectedVariant = variant">
+			<div v-if="availableVariants?.length > 1" class="variant-container">
+				<div class="variant-item" v-for="variant in availableVariants" :key="variant._id" :class="{ active: selectedVariant?.title === variant.title }" @click="selectedVariant = variant">
 					<p>{{ variant.title }}</p>
 				</div>
 			</div>
 			<p>{{ product?.priceRange?.minVariantPrice }}</p>
+			<div v-if="error" class="error-message">
+				{{ error }}
+			</div>
 			<button @click="handleAddToCart" :disabled="!selectedVariant || cartLoading" class="button-container">
 				{{ cartLoading ? 'Adding...' : product?.translations?.addToCartText || 'Add to Cart' }}
 			</button>
@@ -23,19 +26,26 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 import { useSanityProductWithTranslations } from '@/composables/useSanityProductsWithTranslations';
 import { useI18n } from 'vue-i18n';
 
 const route = useRoute();
 const { locale } = useI18n();
-const { addToCart, loading: cartLoading, cart: cartData } = useCart();
+const { addToCart, loading: cartLoading, cart: cartData, openCart } = useCart();
 
 const product = ref(null);
 const selectedVariant = ref(null);
 const quantity = ref(1);
 const loading = ref(false);
 const error = ref(null);
+
+// Computed property to filter available variants
+const availableVariants = computed(() => {
+	if (!product.value?.variants) return [];
+
+	return product.value.variants.filter((variant) => variant.shopifyId && variant.shopifyId.startsWith('gid://shopify/ProductVariant/'));
+});
 
 useHead(() => ({
 	title: product.value ? `${product.value.translations?.title || product.value.title} - Grissini` : 'Product - Grissini',
@@ -55,21 +65,20 @@ const loadProduct = async () => {
 		const handle = route.params.handle;
 		const productData = await useSanityProductWithTranslations(handle, locale.value);
 
-		console.log('=== PRODUCT DETAIL PAGE DATA ===');
-		console.log('Handle:', handle);
-		console.log('Locale:', locale.value);
-		console.log('Product Data:', productData);
-		console.log('================================');
-
 		if (!productData) {
 			throw new Error('Product not found');
 		}
 
 		product.value = productData;
 
-		// Sélectionner la première variante par défaut
-		if (productData.variants?.length > 0) {
-			selectedVariant.value = productData.variants[0];
+		// Sélectionner la première variante disponible par défaut
+		// Wait for the computed property to update
+		await nextTick();
+
+		if (availableVariants.value.length > 0) {
+			selectedVariant.value = availableVariants.value[0];
+		} else {
+			error.value = 'This product is currently unavailable';
 		}
 	} catch (err) {
 		error.value = err.message;
@@ -85,10 +94,27 @@ const handleAddToCart = async () => {
 		return;
 	}
 
+	// Debug: Log variant data
+	console.log('Selected variant:', selectedVariant.value);
+	console.log('Shopify ID:', selectedVariant.value.shopifyId);
+
+	if (!selectedVariant.value.shopifyId) {
+		console.error('No Shopify ID found for selected variant');
+		error.value = 'Product variant not available';
+		return;
+	}
+
 	try {
 		await addToCart(selectedVariant.value.shopifyId, quantity.value);
+		// Open cart after successful addition
+		openCart();
 	} catch (err) {
 		console.error('Error adding to cart:', err);
+		if (err.message.includes("n'existent pas") || err.message.includes('does not exist')) {
+			error.value = 'This product variant is no longer available. Please refresh the page or contact support.';
+		} else {
+			error.value = 'Failed to add product to cart. Please try again.';
+		}
 	}
 };
 
@@ -143,6 +169,7 @@ onMounted(async () => {
 			@include switzer(600, normal);
 			font-size: 12rem;
 			color: $black;
+			text-transform: uppercase;
 		}
 
 		.description {
@@ -159,6 +186,11 @@ onMounted(async () => {
 			flex-wrap: wrap;
 			margin-top: 39rem;
 			.variant-item {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				width: 40rem;
+				height: 40rem;
 				@include switzer(500, normal);
 				font-size: 12rem;
 				color: $black;
@@ -177,10 +209,20 @@ onMounted(async () => {
 			}
 		}
 
+		.error-message {
+			margin-top: 20rem;
+			@include switzer(400, normal);
+			font-size: 10rem;
+			color: #e74c3c;
+			padding: 10rem;
+			background-color: rgba(231, 76, 60, 0.1);
+			border: 1px solid rgba(231, 76, 60, 0.3);
+		}
+
 		.button-container {
 			margin-top: 39rem;
 			@include switzer(500, normal);
-			font-size: 12rem;
+			font-size: 8rem;
 			color: $black;
 			padding: 10rem;
 			background-color: $black;
@@ -205,6 +247,7 @@ onMounted(async () => {
 		@include tablet {
 			display: flex;
 			flex-direction: column;
+			gap: 3rem;
 
 			img {
 				width: 100%;

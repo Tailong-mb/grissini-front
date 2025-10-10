@@ -1,34 +1,40 @@
 <template>
-	<div class="newsletter-popin container" :class="{ active: isOpen }">
-		<div class="newsletter-popin__left tb:col-start-1 tb:col-end-8" :class="{ active: isOpen }" @click="closeCart"></div>
-		<div class="newsletter-popin__right col-start-1 col-end-6 tb:col-start-8 tb:col-end-13">
-			<button class="newsletter-popin__right__close" :class="{ active: isOpen }" @click="closeCart">
+	<div class="cart-popin container" :class="{ active: isOpen }">
+		<div class="cart-popin__left tb:col-start-1 tb:col-end-8" :class="{ active: isOpen }" @click="closeCart"></div>
+		<div class="cart-popin__right col-start-1 col-end-6 tb:col-start-8 tb:col-end-13">
+			<button class="cart-popin__right__close" :class="{ active: isOpen }" @click="closeCart">
 				{{ data?.menuClose }}
 			</button>
 			<h2 :class="{ active: isOpen }">
 				{{ data?.cartTitle }}
 			</h2>
-			<div class="lines"></div>
 
 			<div class="line col-start-1 col-end-6 tb:col-start-1 tb:col-end-5"></div>
 
 			<template v-if="cartData && cartData.lines?.edges && cartData.lines.edges.length > 0">
 				<template v-for="edge in cartData?.lines?.edges" :key="edge.node.id">
-					<div class="image-product col-start-1 col-end-2">
-						<img :src="edge.node.merchandise?.product?.images?.edges?.[0]?.node?.url || ''" :alt="edge.node.merchandise?.product?.images?.edges?.[0]?.node?.altText || edge.node.merchandise?.product?.title" />
+					<div class="cart-item">
+						<!-- Colonne 1: Image -->
+						<div class="cart-item__image">
+							<img :src="edge.node.merchandise?.product?.images?.edges?.[0]?.node?.url || ''" :alt="edge.node.merchandise?.product?.images?.edges?.[0]?.node?.altText || edge.node.merchandise?.product?.title" />
+						</div>
+
+						<!-- Colonne 2: Titre et bouton remove -->
+						<div class="cart-item__info">
+							<div class="cart-item__title">{{ edge.node.merchandise?.product?.title }}</div>
+							<button class="cart-item__remove" @click="removeFromCart(edge.node.id)">Remove</button>
+						</div>
+
+						<!-- Colonne 3: Prix et quantité -->
+						<div class="cart-item__controls">
+							<div class="cart-item__price">{{ formatPrice(edge.node.cost?.subtotalAmount) }}</div>
+							<div class="cart-item__quantity">
+								<button class="quantity-btn" @click="updateQuantity(edge.node.id, edge.node.quantity - 1)" :disabled="edge.node.quantity <= 1">-</button>
+								<span class="quantity-number">{{ edge.node.quantity }}</span>
+								<button class="quantity-btn" @click="updateQuantity(edge.node.id, edge.node.quantity + 1)">+</button>
+							</div>
+						</div>
 					</div>
-					<div class="col-start-2 col-end-4 tb:col-start-2 tb:col-end-3 title-product">
-						{{ edge.node.merchandise?.product?.title }}
-					</div>
-					<div class="col-start-3 col-end-5 tb:col-start-3 tb:col-end-4 quantity">
-						<button class="less-product" @click="updateQuantity(edge.node.id, edge.node.quantity - 1)" :disabled="edge.node.quantity <= 1">-</button>
-						<div class="quantity">{{ edge.node.quantity }}</div>
-						<button class="more-product" @click="updateQuantity(edge.node.id, edge.node.quantity + 1)">+</button>
-					</div>
-					<div class="col-start-5 col-end-6 tb:col-start-4 tb:col-end-5 title-product">
-						{{ formatPrice(edge.node.cost?.subtotalAmount) }}
-					</div>
-					<div class="line col-start-1 col-end-6 tb:col-start-1 tb:col-end-5"></div>
 				</template>
 			</template>
 
@@ -36,15 +42,14 @@
 			<template v-else>
 				<div class="empty-cart col-start-1 col-end-6 tb:col-start-1 tb:col-end-5">Votre panier est vide</div>
 			</template>
-		</div>
-
-		<!-- Total et bouton checkout -->
-		<div v-if="cartData && cartData.lines?.edges && cartData.lines.edges.length > 0" class="cart-footer" :class="{ active: isOpen }">
-			<div class="cart-total">
-				<span class="total-label">{{ data?.totalLabel }}:</span>
-				<span class="total-amount">{{ formatPrice(cartData.cost?.totalAmount) }}</span>
+			<!-- Total et bouton checkout -->
+			<div v-if="cartData && cartData.lines?.edges && cartData.lines.edges.length > 0" class="cart-footer" :class="{ active: isOpen }">
+				<div class="cart-total">
+					<span class="total-label">{{ data?.totalLabel }}</span>
+					<span class="total-amount">{{ formatPrice(cartData.cost?.totalAmount) }}</span>
+				</div>
+				<button class="checkout-btn" @click="goToCheckout">Passer la commande</button>
 			</div>
-			<button class="checkout-btn" @click="goToCheckout">Passer la commande</button>
 		</div>
 	</div>
 </template>
@@ -53,6 +58,8 @@
 const { locale } = useI18n();
 const { isOpen, closeCart, cart: cartData, updateCartLine, removeFromCart, checkout, initializeCart } = useCart();
 const rawData = ref(null);
+
+// NOTE: données réelles du panier via useCart()
 
 const data = computed(() => {
 	if (!rawData.value) return null;
@@ -82,14 +89,21 @@ const formatPrice = (priceData) => {
 const updateQuantity = async (lineId, newQuantity) => {
 	try {
 		if (newQuantity <= 0) {
-			// Supprimer le produit si quantité <= 0
 			await removeFromCart(lineId);
 		} else {
-			// Mettre à jour la quantité
 			await updateCartLine(lineId, newQuantity);
 		}
 	} catch (error) {
 		console.error('Erreur lors de la mise à jour du panier:', error);
+	}
+};
+
+// Supprimer un produit du panier
+const removeItem = async (lineId) => {
+	try {
+		await removeFromCart(lineId);
+	} catch (error) {
+		console.error('Erreur lors de la suppression du produit:', error);
 	}
 };
 
@@ -98,22 +112,22 @@ const goToCheckout = () => {
 	checkout();
 };
 
-const loadNewsletterData = async () => {
+const loadCartData = async () => {
 	try {
 		rawData.value = await useSanityMenu();
 	} catch (err) {
-		console.error('Newsletter loading error:', err);
+		console.error('Cart loading error:', err);
 	}
 };
 
 onMounted(async () => {
-	await loadNewsletterData();
+	await loadCartData();
 	await initializeCart();
 });
 </script>
 
 <style lang="scss" scoped>
-.newsletter-popin {
+.cart-popin {
 	position: fixed;
 	top: 0;
 	left: 0;
@@ -212,35 +226,34 @@ onMounted(async () => {
 		}
 	}
 
-	.grid-cart {
-		margin-top: 30rem;
-		opacity: 0;
-		transition: opacity 0.2s linear;
+	.line {
+		height: 1rem;
+		background-color: $black;
+		opacity: 0.1;
+		margin: 16rem 0;
+	}
 
-		&.active {
-			opacity: 1;
-			transition: 1.2s opacity 0.5s linear;
-		}
+	.cart-item {
+		position: relative;
+		display: flex;
+		align-items: center;
+		gap: 20rem;
+		padding: 24rem 0;
 
-		.cart-head {
-			@include switzer(400, normal);
-			font-size: 8rem;
-			color: $black;
-			opacity: 0.4;
-			text-transform: uppercase;
-			margin-bottom: 16rem;
-		}
-
-		.line {
+		&::after {
+			content: '';
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			width: 100%;
 			height: 1rem;
 			background-color: $black;
 			opacity: 0.1;
-			margin: 16rem 0;
 		}
 
-		.image-product {
-			width: 64rem;
-			height: 64rem;
+		&__image {
+			flex: 1;
+			height: 116rem;
 			border: 1px solid rgba($black, 0.2);
 			overflow: hidden;
 			transition: border-color 0.3s linear;
@@ -252,22 +265,60 @@ onMounted(async () => {
 			}
 		}
 
-		.title-product {
-			@include switzer(400, normal);
-			font-size: 10rem;
-			color: $black;
-			align-self: center;
+		&__info {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			height: 116rem;
 		}
 
-		.quantity {
+		&__title {
+			@include pp-neue(500, normal);
+			font-size: 12rem;
+			color: $black;
+			margin-bottom: auto;
+		}
+
+		&__remove {
+			@include pp-neue(500, normal);
+			font-size: 8rem;
+			color: rgba($black, 0.5);
+			background: none;
+			border: none;
+			cursor: pointer;
+			text-transform: uppercase;
+			transition: color 0.3s linear;
+			align-self: flex-start;
+
+			&:hover {
+				color: $black;
+			}
+		}
+
+		&__controls {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-end;
+			height: 116rem;
+		}
+
+		&__price {
+			@include pp-neue(500, normal);
+			font-size: 14rem;
+			color: $black;
+			margin-bottom: 20rem;
+		}
+
+		&__quantity {
 			display: flex;
 			align-items: center;
-			gap: 12rem;
+			gap: 29rem;
 
-			.less-product,
-			.more-product {
-				width: 24rem;
-				height: 24rem;
+			.quantity-btn {
+				width: 20rem;
+				height: 20rem;
 				display: flex;
 				align-items: center;
 				justify-content: center;
@@ -290,9 +341,9 @@ onMounted(async () => {
 				}
 			}
 
-			.quantity {
-				@include switzer(400, normal);
-				font-size: 10rem;
+			.quantity-number {
+				@include pp-neue(500, normal);
+				font-size: 14rem;
 				color: $black;
 				min-width: 20rem;
 				text-align: center;
@@ -301,8 +352,8 @@ onMounted(async () => {
 	}
 
 	.empty-cart {
-		@include switzer(400, normal);
-		font-size: 10rem;
+		@include pp-neue(500, normal);
+		font-size: 14rem;
 		color: $black;
 		text-align: center;
 		margin-top: 40rem;
@@ -324,27 +375,25 @@ onMounted(async () => {
 			justify-content: space-between;
 			align-items: center;
 			margin-bottom: 24rem;
-			padding: 16rem 0;
-			border-top: 1px solid rgba($black, 0.1);
 
 			.total-label {
-				@include switzer(400, normal);
-				font-size: 10rem;
+				@include pp-neue(500, normal);
+				font-size: 12rem;
 				color: $black;
 				text-transform: uppercase;
 			}
 
 			.total-amount {
-				@include switzer(600, normal);
-				font-size: 12rem;
+				@include pp-neue(500, normal);
+				font-size: 14rem;
 				color: $black;
 			}
 		}
 
 		.checkout-btn {
-			@include switzer(400, normal);
+			@include switzer(600, normal);
 			width: 100%;
-			font-size: 10rem;
+			font-size: 12rem;
 			text-transform: uppercase;
 			padding: 16rem 24rem;
 			color: $white;
