@@ -12,6 +12,7 @@ export const useSanityMenu = async () => {
       "mail": menu.mail,
       "emailLabel": menu.emailLabel,
       "cartTitle": menu.cartTitle,
+      "cartMenuTitle": menu.cartMenuTitle,
       "totalLabel": menu.totalLabel,
     },
     "socialMedia": *[_type == "socialMediaSettings"][0]{

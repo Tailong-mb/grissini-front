@@ -15,6 +15,18 @@
 					<NuxtLink :to="link.url" :class="{ active: isActiveLink(link.url) }" @click="closeMenu">{{ link.text }}</NuxtLink>
 					<div class="index" :class="{ active: isActiveLink(link.url) }">({{ String(index + 1).padStart(2, '0') }})</div>
 				</li>
+				<li :class="{ open: isOpen }">
+					<button
+						@click="
+							() => {
+								(openCart(), closeMenu());
+							}
+						"
+					>
+						{{ data?.cartMenuTitle }}
+					</button>
+					<div class="index">({{ String(localizedNavigationData?.mainNavigation?.length + 1).padStart(2, '0') }})</div>
+				</li>
 			</ul>
 		</div>
 	</div>
@@ -24,6 +36,7 @@
 import PartitionSvg from '@/components/svg/PartitionSvg.vue';
 
 const { isOpen, closeMenu } = useMenu();
+const { openCart } = useCart();
 const { locale } = useI18n();
 const route = useRoute();
 const rawData = ref(null);
@@ -38,6 +51,7 @@ const data = computed(() => {
 		newsletterText: rawData.value.menu?.newsletterText?.[locale.value] || rawData.value.menu?.newsletterText?.en || rawData.value.menu?.newsletterText,
 		contactText: rawData.value.menu?.contactText?.[locale.value] || rawData.value.menu?.contactText?.en || rawData.value.menu?.contactText,
 		mail: rawData.value.menu?.mail,
+		cartMenuTitle: rawData.value.menu?.cartMenuTitle?.[locale.value] || rawData.value.menu?.cartMenuTitle?.en || rawData.value.menu?.cartMenuTitle,
 		socialLinks:
 			rawData.value.socialMedia?.socialLinks?.map((link) => ({
 				...link,
@@ -81,6 +95,7 @@ const loadMenuData = async () => {
 		console.log('Current Locale:', locale.value);
 		console.log('Computed Menu Data:', data.value);
 		console.log('Computed Navigation Data:', localizedNavigationData.value);
+		console.log('Cart Menu Title:', data.value?.cartMenuTitle);
 		console.log('=================');
 	} catch (err) {
 		console.error('Menu loading error:', err);
@@ -243,7 +258,18 @@ onMounted(async () => {
 					}
 				}
 
-				a {
+				&:hover {
+					a {
+						opacity: 1;
+					}
+
+					.index {
+						opacity: 1;
+					}
+				}
+
+				a,
+				button {
 					@include ppeditorial(200, normal);
 					text-transform: uppercase;
 					font-size: 50rem;
