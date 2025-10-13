@@ -1,6 +1,6 @@
 import sanity from '@/utils/sanity';
 
-export const useSanityMenu = async (locale = 'en') => {
+export const useSanityMenu = async () => {
 	const query = `{
     "menu": *[_type == "menuSettings"][0]{
       "menuText": menu.menuText,
@@ -17,7 +17,7 @@ export const useSanityMenu = async (locale = 'en') => {
     "socialMedia": *[_type == "socialMediaSettings"][0]{
       "socialLinks": socialMedia.links[]{
         url,
-        "linkText": text.${locale},
+        "linkText": text,
         isActive
       }
     }

@@ -6,7 +6,7 @@
 			<a href="mailto:{{ compositionData?.email }}">{{ compositionData?.email }}</a>
 		</div>
 		<div class="right-part col-start-1 col-end-5 tb:col-start-8 tb:col-end-11">
-			<PartitionSvg />
+			<PartitionSvg theme="light" />
 			<div class="right-part__items">
 				<div class="right-part__item" v-for="item in compositionData?.items" :key="item._key">
 					<h2>{{ item?.title }}</h2>

@@ -1,5 +1,5 @@
 <template>
-	<svg width="330" height="126" viewBox="0 0 330 126" fill="none" xmlns="http://www.w3.org/2000/svg">
+	<svg width="330" height="126" viewBox="0 0 330 126" fill="none" xmlns="http://www.w3.org/2000/svg" :data-theme="theme">
 		<line opacity="0.2" y1="14.0733" x2="330" y2="14.0733" stroke="black" stroke-width="0.970588" />
 		<line opacity="0.2" y1="41.7354" x2="330" y2="41.7354" stroke="black" stroke-width="0.970588" />
 		<line opacity="0.2" y1="69.3965" x2="330" y2="69.3965" stroke="black" stroke-width="0.970588" />
@@ -28,8 +28,39 @@
 	</svg>
 </template>
 
+<script setup>
+const props = defineProps({
+	theme: {
+		type: String,
+		default: 'light',
+	},
+});
+</script>
+
 <style lang="scss" scoped>
 svg {
 	width: 100%;
+	path,
+	line {
+		transition: fill 0.3s linear;
+	}
+
+	&[data-theme='dark'] {
+		path {
+			fill: $white;
+		}
+		line {
+			stroke: $white;
+		}
+	}
+
+	&[data-theme='light'] {
+		path {
+			fill: $black;
+		}
+		line {
+			stroke: $black;
+		}
+	}
 }
 </style>

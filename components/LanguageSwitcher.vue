@@ -1,12 +1,12 @@
 <template>
-	<div class="language-switcher__wrapper">
+	<div class="language-switcher__wrapper" :data-theme="theme">
 		<div class="language-switcher">
 			<button v-for="localeItem in locales" :key="localeItem.code" @click="switchLanguage(localeItem.code)" :class="{ active: localeItem.code === $i18n.locale, 'switch-active': switchLanguageValue }" class="language-btn">
 				{{ localeItem.code.toUpperCase() }}
 			</button>
 		</div>
 		<button class="language-switcher__switch" :class="{ 'switch-active': switchLanguageValue }" @click="switchLanguageValue = !switchLanguageValue">
-			<SwitchSvg />
+			<SwitchSvg :theme="theme" />
 		</button>
 	</div>
 </template>
@@ -14,6 +14,13 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 import SwitchSvg from '@/components/svg/SwitchSvg.vue';
+
+const props = defineProps({
+	theme: {
+		type: String,
+		default: 'light',
+	},
+});
 
 const { locale, availableLocales } = useI18n();
 const switchLanguageValue = ref(false);
@@ -66,9 +73,11 @@ const switchLanguage = async (newLocale) => {
 			@include switzer(600, normal);
 			color: $black;
 			font-size: 12rem;
-			transition: opacity 0.3s linear;
 			opacity: 0;
 			pointer-events: none;
+			transition:
+				opacity 0.3s linear,
+				color 0.3s linear;
 
 			&:hover,
 			&.active {
@@ -91,6 +100,18 @@ const switchLanguage = async (newLocale) => {
 
 		&.switch-active {
 			transform: rotate(0deg);
+		}
+	}
+
+	&[data-theme='dark'] {
+		.language-btn {
+			color: $white;
+		}
+	}
+
+	&[data-theme='light'] {
+		.language-btn {
+			color: $black;
 		}
 	}
 }

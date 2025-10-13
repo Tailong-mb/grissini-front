@@ -1,13 +1,14 @@
 <template>
 	<div class="navigation-bottom">
-		<button @click="openNewsletter">{{ data?.newsletterText }}</button>
-		<a :href="`mailto:${data?.mail}`">{{ data?.contactText }}</a>
+		<button @click="openNewsletter" :class="{ hide: isOpen }">{{ data?.newsletterText }}</button>
+		<a :href="`mailto:${data?.mail}`" :class="{ open: isOpen }">{{ data?.contactText }}</a>
 	</div>
 </template>
 
 <script setup>
 const { locale } = useI18n();
 const { openNewsletter } = useNewsletter();
+const { isOpen } = useMenu();
 const rawData = ref(null);
 
 // Computed property to get localized menu data
@@ -18,7 +19,11 @@ const data = computed(() => {
 		newsletterText: rawData.value.menu?.newsletterText?.[locale.value] || rawData.value.menu?.newsletterText?.en || rawData.value.menu?.newsletterText,
 		contactText: rawData.value.menu?.contactText?.[locale.value] || rawData.value.menu?.contactText?.en || rawData.value.menu?.contactText,
 		mail: rawData.value.menu?.mail,
-		socialLinks: rawData.value.socialMedia?.socialLinks || [],
+		socialLinks:
+			rawData.value.socialMedia?.socialLinks?.map((link) => ({
+				...link,
+				linkText: link.linkText?.[locale.value] || link.linkText?.en || link.linkText,
+			})) || [],
 	};
 });
 
@@ -68,13 +73,30 @@ onMounted(async () => {
 		color: $black;
 		text-transform: uppercase;
 		font-size: 12rem;
-		transition: opacity 0.3s linear;
+		transition:
+			opacity 0.3s linear,
+			color 0.3s linear;
 
 		&:hover {
 			&::after {
 				transform: scale3d(1, 1, 1);
 				transform-origin: left center;
 			}
+		}
+
+		&.open {
+			color: $white;
+			transition:
+				opacity 0.3s linear,
+				0.5s color 0.3s linear;
+		}
+
+		&.hide {
+			opacity: 0;
+			pointer-events: none;
+			transition:
+				opacity 0.3s linear,
+				0.3s color 0.3s linear;
 		}
 
 		&::after {

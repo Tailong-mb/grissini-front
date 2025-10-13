@@ -1,5 +1,6 @@
 <template>
 	<Header />
+	<Menu />
 	<Newsletter />
 	<Cart />
 	<NuxtPage :transition="pageTransition" />

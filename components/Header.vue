@@ -2,17 +2,17 @@
 	<header class="header container">
 		<div class="header__logo col-start-1 col-end-4 tb:col-start-1 tb:col-end-3">
 			<NuxtLink to="/">
-				<LogoSvg />
+				<LogoSvg :theme="isOpen ? 'dark' : 'light'" />
 			</NuxtLink>
 		</div>
 		<div class="header__lang col-start-4 col-end-5 tb:col-start-10 tb:col-end-11">
-			<LanguageSwitcher />
+			<LanguageSwitcher :theme="isOpen ? 'dark' : 'light'" />
 		</div>
 		<button class="header__newsletter tb:col-start-11 tb:col-end-12" @click="openNewsletter">
-			<span>{{ data?.newsletterText }}</span>
+			<span :class="{ open: isOpen }">{{ data?.newsletterText }}</span>
 		</button>
-		<button class="header__menu col-start-5 col-end-6 tb:col-start-12 tb:col-end-13">
-			<span>{{ data?.menuText }}</span>
+		<button class="header__menu col-start-5 col-end-6 tb:col-start-12 tb:col-end-13" @click="toggleMenu">
+			<span :class="{ open: isOpen }">{{ isOpen ? data?.menuClose : data?.menuText }}</span>
 		</button>
 	</header>
 </template>
@@ -22,6 +22,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 
 const { locale } = useI18n();
 const { openNewsletter } = useNewsletter();
+const { isOpen, toggleMenu } = useMenu();
 const rawData = ref(null);
 
 // Computed property to get localized menu data
@@ -35,7 +36,11 @@ const data = computed(() => {
 		newsletterText: rawData.value.menu?.newsletterText?.[locale.value] || rawData.value.menu?.newsletterText?.en || rawData.value.menu?.newsletterText,
 		contactText: rawData.value.menu?.contactText?.[locale.value] || rawData.value.menu?.contactText?.en || rawData.value.menu?.contactText,
 		mail: rawData.value.menu?.mail,
-		socialLinks: rawData.value.socialMedia?.socialLinks || [],
+		socialLinks:
+			rawData.value.socialMedia?.socialLinks?.map((link) => ({
+				...link,
+				linkText: link.linkText?.[locale.value] || link.linkText?.en || link.linkText,
+			})) || [],
 	};
 });
 
@@ -59,7 +64,7 @@ onMounted(loadMenuData);
 .header {
 	position: fixed;
 	top: 8rem;
-	z-index: 100;
+	z-index: 120;
 	pointer-events: none;
 
 	.header__logo {
@@ -100,7 +105,9 @@ onMounted(loadMenuData);
 			color: $black;
 			text-transform: uppercase;
 			font-size: 12rem;
-			transition: opacity 0.3s linear;
+			transition:
+				opacity 0.3s linear,
+				color 0.3s linear;
 			height: fit-content;
 
 			&::after {
@@ -116,6 +123,10 @@ onMounted(loadMenuData);
 				transition:
 					transform 0.5s $out-cubic,
 					opacity 0.3s linear;
+			}
+
+			&.open {
+				color: $white;
 			}
 		}
 	}

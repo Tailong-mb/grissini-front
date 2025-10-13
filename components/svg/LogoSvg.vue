@@ -1,5 +1,5 @@
 <template>
-	<svg width="229" height="43" viewBox="0 0 229 43" fill="none" xmlns="http://www.w3.org/2000/svg">
+	<svg width="229" height="43" viewBox="0 0 229 43" fill="none" xmlns="http://www.w3.org/2000/svg" :data-theme="theme">
 		<path
 			d="M16.4783 42.0551C5.50963 42.0551 0 32.7545 0 21.0781C0 9.25011 5.71182 0 16.074 0C19.4606 0 22.0891 0.909847 24.5659 3.08337C25.4252 3.84158 26.0317 3.68993 26.1328 2.62845L26.2845 0.50547H27.3965L28.1042 14.507H27.0427C25.7285 6.26783 22.4429 1.76915 16.1751 1.76915C7.68315 1.76915 3.4372 10.16 3.4372 20.8254C3.4372 31.6425 8.03698 40.2355 16.8827 40.2355C21.3814 40.2355 24.5153 37.5059 25.9306 35.2313V25.4252C25.9306 22.3418 25.0713 21.6847 15.4674 21.6847V20.6232H32.0468V21.6847C29.1656 21.6847 28.8624 22.2912 28.8624 25.4252V35.3829C25.9812 39.7805 21.4825 42.0551 16.4783 42.0551Z"
 			fill="black"
@@ -40,9 +40,39 @@
 	</svg>
 </template>
 
+<script setup>
+const props = defineProps({
+	theme: {
+		type: String,
+		default: 'light',
+	},
+});
+</script>
+
 <style lang="scss" scoped>
 svg {
-	width: 229rem;
-	height: 43rem;
+	width: 100%;
+	height: auto;
+
+	@include tablet {
+		width: 229rem;
+		height: 43rem;
+	}
+
+	path {
+		transition: fill 0.3s linear;
+	}
+
+	&[data-theme='dark'] {
+		path {
+			fill: $white;
+		}
+	}
+
+	&[data-theme='light'] {
+		path {
+			fill: $black;
+		}
+	}
 }
 </style>

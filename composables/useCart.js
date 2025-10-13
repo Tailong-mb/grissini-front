@@ -1,5 +1,5 @@
 import { getShopifyClient, cleanShopifyData } from '~/utils/shopify';
-const isOpen = ref(true);
+const isOpen = ref(false);
 // Queries et mutations pour le panier
 const CART_QUERIES = {
 	// Créer un nouveau panier
