@@ -123,11 +123,16 @@ onMounted(loadMenuData);
 				transform-origin: right center;
 				transition:
 					transform 0.5s $out-cubic,
-					opacity 0.3s linear;
+					opacity 0.3s linear,
+					background-color 0.3s linear;
 			}
 
 			&.open {
 				color: $white;
+
+				&::after {
+					background-color: $white;
+				}
 			}
 		}
 	}
