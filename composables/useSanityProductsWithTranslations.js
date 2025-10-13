@@ -1,6 +1,6 @@
 import sanity from '@/utils/sanity';
 
-export const useSanityProductsWithTranslations = async (locale = 'en', category = 'all', page = 1, limit = 12) => {
+export const useSanityProductsWithTranslations = async (category = 'all', page = 1, limit = 12) => {
 	// Construire la requête de filtrage
 	let filterQuery = `*[_type == "product" && defined(store) && !store.isDeleted`;
 
@@ -25,11 +25,11 @@ export const useSanityProductsWithTranslations = async (locale = 'en', category 
     "vendor": store.vendor,
     "tags": store.tags,
     "translations": translations{
-      "title": title.${locale},
-      "description": description.${locale},
-      "shortDescription": shortDescription.${locale},
-      "addToCartText": addToCartText.${locale},
-      "discoverProductText": discoverProductText.${locale}
+      "title": title,
+      "description": description,
+      "shortDescription": shortDescription,
+      "addToCartText": addToCartText,
+      "discoverProductText": discoverProductText
     },
     "images": images[]{
       asset->{
@@ -55,7 +55,7 @@ export const useSanityProductsWithTranslations = async (locale = 'en', category 
 };
 
 // Composable pour récupérer un produit spécifique avec traductions
-export const useSanityProductWithTranslations = async (slug, locale = 'en') => {
+export const useSanityProductWithTranslations = async (slug) => {
 	const query = `*[_type == "product" && store.slug.current == $slug && !store.isDeleted][0]{
     _id,
     "title": store.title,
@@ -66,11 +66,11 @@ export const useSanityProductWithTranslations = async (slug, locale = 'en') => {
     "vendor": store.vendor,
     "tags": store.tags,
     "translations": translations{
-      "title": title.${locale},
-      "description": description.${locale},
-      "shortDescription": shortDescription.${locale},
-      "addToCartText": addToCartText.${locale},
-      "discoverProductText": discoverProductText.${locale}
+      "title": title,
+      "description": description,
+      "shortDescription": shortDescription,
+      "addToCartText": addToCartText,
+      "discoverProductText": discoverProductText
     },
     "images": images[]{
       asset->{

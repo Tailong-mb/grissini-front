@@ -1,13 +1,13 @@
 import sanity from '@/utils/sanity';
 
-export const useSanityShop = async (locale = 'en') => {
+export const useSanityShop = async () => {
 	// Requête optimisée qui récupère tout en une fois
 	const query = `{
     "shop": *[_type == "shop"][0]{
       "productsPerPage": productsPerPage,
       "categories": categories[]{
         key,
-        "label": label.${locale}
+        "label": label
       },
       "seo": seo
     },

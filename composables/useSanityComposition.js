@@ -1,12 +1,12 @@
 import sanity from '@/utils/sanity';
 
-export const useSanityComposition = async (locale = 'en') => {
+export const useSanityComposition = async () => {
 	const query = `*[_type == "composition"][0]{
-    "description": description.${locale},
+    "description": description,
     email,
     "items": items[]{
-      "title": title.${locale},
-      "description": description.${locale}
+      "title": title,
+      "description": description
     },
     "seo": seo
   }`;

@@ -2,13 +2,13 @@
 	<div id="page-composition" class="container">
 		<div class="left-part col-start-1 col-end-5 tb:col-start-3 tb:col-end-6">
 			<h1>GRISSINI</h1>
-			<p>{{ compositionData?.description }}</p>
-			<a href="mailto:{{ compositionData?.email }}">{{ compositionData?.email }}</a>
+			<p>{{ viewData?.description }}</p>
+			<a :href="`mailto:${viewData?.email}`">{{ viewData?.email }}</a>
 		</div>
 		<div class="right-part col-start-1 col-end-5 tb:col-start-8 tb:col-end-11">
 			<PartitionSvg theme="light" />
 			<div class="right-part__items">
-				<div class="right-part__item" v-for="item in compositionData?.items" :key="item._key">
+				<div class="right-part__item" v-for="item in viewData?.items" :key="item._key">
 					<h2>{{ item?.title }}</h2>
 					<p>{{ item?.description }}</p>
 				</div>
@@ -18,14 +18,29 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useSanityComposition } from '@/composables/useSanityComposition';
 import { useI18n } from 'vue-i18n';
 import PartitionSvg from '@/components/svg/PartitionSvg.vue';
+import { getLocalizedText } from '@/utils/translate';
 
 const { locale } = useI18n();
 
 const compositionData = ref(null);
+const viewData = computed(() => {
+	if (!compositionData.value) return null;
+
+	return {
+		description: getLocalizedText(compositionData.value.description, locale.value),
+		email: compositionData.value.email,
+		items: (compositionData.value.items || []).map((item) => ({
+			...item,
+			title: getLocalizedText(item.title, locale.value),
+			description: getLocalizedText(item.description, locale.value),
+		})),
+		seo: compositionData.value.seo,
+	};
+});
 const loading = ref(false);
 const error = ref(null);
 
@@ -33,7 +48,7 @@ const loadCompositionData = async () => {
 	loading.value = true;
 	error.value = null;
 	try {
-		compositionData.value = await useSanityComposition(locale.value);
+		compositionData.value = await useSanityComposition();
 		console.log('=== COMPOSITION PAGE DATA ===');
 		console.log('Locale:', locale.value);
 		console.log('Composition Data:', compositionData.value);

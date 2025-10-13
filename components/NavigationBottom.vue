@@ -6,6 +6,8 @@
 </template>
 
 <script setup>
+import { getLocalizedText } from '@/utils/translate';
+
 const { locale } = useI18n();
 const { openNewsletter } = useNewsletter();
 const { isOpen } = useMenu();
@@ -16,13 +18,13 @@ const data = computed(() => {
 	if (!rawData.value) return null;
 
 	return {
-		newsletterText: rawData.value.menu?.newsletterText?.[locale.value] || rawData.value.menu?.newsletterText?.en || rawData.value.menu?.newsletterText,
-		contactText: rawData.value.menu?.contactText?.[locale.value] || rawData.value.menu?.contactText?.en || rawData.value.menu?.contactText,
+		newsletterText: getLocalizedText(rawData.value.menu?.newsletterText, locale.value),
+		contactText: getLocalizedText(rawData.value.menu?.contactText, locale.value),
 		mail: rawData.value.menu?.mail,
 		socialLinks:
 			rawData.value.socialMedia?.socialLinks?.map((link) => ({
 				...link,
-				linkText: link.linkText?.[locale.value] || link.linkText?.en || link.linkText,
+				linkText: getLocalizedText(link.linkText, locale.value),
 			})) || [],
 	};
 });

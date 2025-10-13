@@ -1,26 +1,26 @@
 <template>
 	<div class="container product-detail-page">
 		<div class="image-mobile-container col-start-1 col-end-6">
-			<img v-for="image in product?.images" :key="image._id" :src="image.asset.url" :alt="product.translations?.title || product.title" />
+			<img v-for="image in localizedProduct?.images" :key="image._id" :src="image.asset.url" :alt="localizedProduct.translations?.title || localizedProduct.title" />
 		</div>
 		<div class="content-container col-start-2 col-end-6">
-			<h1>{{ product?.translations?.title || product?.title }}</h1>
-			<p class="description">{{ product?.translations?.description || '' }}</p>
+			<h1>{{ localizedProduct?.translations?.title || localizedProduct?.title }}</h1>
+			<p class="description">{{ localizedProduct?.translations?.description || '' }}</p>
 			<div v-if="availableVariants?.length > 1" class="variant-container">
 				<div class="variant-item" v-for="variant in availableVariants" :key="variant._id" :class="{ active: selectedVariant?.title === variant.title }" @click="selectedVariant = variant">
 					<p>{{ variant.title }}</p>
 				</div>
 			</div>
-			<p>{{ product?.priceRange?.minVariantPrice }}</p>
+			<p>{{ localizedProduct?.priceRange?.minVariantPrice }}</p>
 			<div v-if="error" class="error-message">
 				{{ error }}
 			</div>
 			<button @click="handleAddToCart" :disabled="!selectedVariant || cartLoading" class="button-container">
-				{{ cartLoading ? 'Adding...' : product?.translations?.addToCartText || 'Add to Cart' }}
+				{{ cartLoading ? 'Adding...' : localizedProduct?.translations?.addToCartText || 'Add to Cart' }}
 			</button>
 		</div>
 		<div class="image-desktop-container tb:col-start-7 tb:col-end-11">
-			<img v-for="image in product?.images" :key="image._id" :src="image.asset.url" :alt="product.translations?.title || product.title" />
+			<img v-for="image in localizedProduct?.images" :key="image._id" :src="image.asset.url" :alt="localizedProduct.translations?.title || localizedProduct.title" />
 		</div>
 	</div>
 </template>
@@ -29,6 +29,7 @@
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { useSanityProductWithTranslations } from '@/composables/useSanityProductsWithTranslations';
 import { useI18n } from 'vue-i18n';
+import { getLocalizedText } from '@/utils/translate';
 
 const route = useRoute();
 const { locale } = useI18n();
@@ -40,6 +41,22 @@ const quantity = ref(1);
 const loading = ref(false);
 const error = ref(null);
 
+// Computed pour les données localisées
+const localizedProduct = computed(() => {
+	if (!product.value) return null;
+
+	return {
+		...product.value,
+		translations: {
+			title: getLocalizedText(product.value.translations?.title, locale.value),
+			description: getLocalizedText(product.value.translations?.description, locale.value),
+			shortDescription: getLocalizedText(product.value.translations?.shortDescription, locale.value),
+			addToCartText: getLocalizedText(product.value.translations?.addToCartText, locale.value),
+			discoverProductText: getLocalizedText(product.value.translations?.discoverProductText, locale.value),
+		},
+	};
+});
+
 // Computed property to filter available variants
 const availableVariants = computed(() => {
 	if (!product.value?.variants) return [];
@@ -48,11 +65,11 @@ const availableVariants = computed(() => {
 });
 
 useHead(() => ({
-	title: product.value ? `${product.value.translations?.title || product.value.title} - Grissini` : 'Product - Grissini',
+	title: localizedProduct.value ? `${localizedProduct.value.translations?.title || localizedProduct.value.title} - Grissini` : 'Product - Grissini',
 	meta: [
 		{
 			name: 'description',
-			content: product.value?.translations?.description || product.value?.title || 'Product details',
+			content: localizedProduct.value?.translations?.description || localizedProduct.value?.title || 'Product details',
 		},
 	],
 }));
@@ -63,7 +80,7 @@ const loadProduct = async () => {
 
 	try {
 		const handle = route.params.handle;
-		const productData = await useSanityProductWithTranslations(handle, locale.value);
+		const productData = await useSanityProductWithTranslations(handle);
 
 		if (!productData) {
 			throw new Error('Product not found');

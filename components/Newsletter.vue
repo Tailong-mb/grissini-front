@@ -24,6 +24,7 @@
 
 <script setup>
 import ArrowRight from '@/components/svg/ArrowRight.vue';
+import { getLocalizedText } from '@/utils/translate';
 
 const { locale } = useI18n();
 const { isOpen, closeNewsletter } = useNewsletter();
@@ -34,13 +35,16 @@ const data = computed(() => {
 	if (!rawData.value) return null;
 
 	return {
-		newsletterText: rawData.value.menu?.newsletterText?.[locale.value] || rawData.value.menu?.newsletterText?.en || rawData.value.menu?.newsletterText,
-		descriptionNewsletter: rawData.value.menu?.descriptionNewsletter?.[locale.value] || rawData.value.menu?.descriptionNewsletter?.en || rawData.value.menu?.descriptionNewsletter,
-		contactText: rawData.value.menu?.contactText?.[locale.value] || rawData.value.menu?.contactText?.en || rawData.value.menu?.contactText,
+		newsletterText: getLocalizedText(rawData.value.menu?.newsletterText, locale.value),
+		descriptionNewsletter: getLocalizedText(rawData.value.menu?.descriptionNewsletter, locale.value),
+		contactText: getLocalizedText(rawData.value.menu?.contactText, locale.value),
 		mail: rawData.value.menu?.mail,
-		emailLabel: rawData.value.menu?.emailLabel?.[locale.value] || rawData.value.menu?.emailLabel?.en || rawData.value.menu?.emailLabel,
-		socialLinks: rawData.value.socialMedia?.socialLinks || [],
-		menuClose: rawData.value.menu?.menuClose?.[locale.value] || rawData.value.menu?.menuClose?.en || rawData.value.menu?.menuClose,
+		emailLabel: getLocalizedText(rawData.value.menu?.emailLabel, locale.value),
+		socialLinks: (rawData.value.socialMedia?.socialLinks || []).map((link) => ({
+			...link,
+			linkText: getLocalizedText(link.linkText, locale.value),
+		})),
+		menuClose: getLocalizedText(rawData.value.menu?.menuClose, locale.value),
 	};
 });
 
@@ -68,6 +72,7 @@ onMounted(async () => {
 	margin: 0;
 	transform: translate3d(100%, 0, 0);
 	transition: transform 2s $out-cubic;
+	column-gap: 0;
 
 	&.active {
 		transform: translate3d(0, 0, 0);
@@ -81,12 +86,11 @@ onMounted(async () => {
 			display: block;
 			height: 100%;
 			background-color: $black;
-			transition: opacity 0.1s linear;
 			opacity: 0;
 
 			&.active {
 				opacity: 0.06;
-				transition: 1.2s opacity 0.5s linear;
+				transition: 1.3s opacity 0.5s linear;
 			}
 		}
 	}

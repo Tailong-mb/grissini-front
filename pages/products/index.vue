@@ -1,12 +1,12 @@
 <template>
 	<div class="products-page container">
-		<div v-if="shopData?.categories" class="categories-wrapper col-start-1 col-end-6 tb:col-end-13">
-			<button v-for="(category, index) in shopData.categories" :key="category.key" @click="loadProducts(category.key)" :class="{ active: selectedCategory === category.key }">
+		<div v-if="localizedShopData?.categories" class="categories-wrapper col-start-1 col-end-6 tb:col-end-13">
+			<button v-for="(category, index) in localizedShopData.categories" :key="category.key" @click="loadProducts(category.key)" :class="{ active: selectedCategory === category.key }">
 				{{ category.label }}
 				<span class="category-count" v-if="index !== 0">({{ category.count || 0 }})</span>
 			</button>
 		</div>
-		<div v-for="(product, index) in products" :key="product._id" class="product-card col-start-1 col-end-6" :class="gridClass[index % gridClass.length]">
+		<div v-for="(product, index) in localizedProducts" :key="product._id" class="product-card col-start-1 col-end-6" :class="gridClass[index % gridClass.length]">
 			<div class="image-container">
 				<img :src="product.images?.[0]?.asset?.url || product.previewImageUrl || '/placeholder-image.jpg'" :alt="product.translations?.title || product.title" />
 			</div>
@@ -25,10 +25,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useSanityShop } from '@/composables/useSanityShop';
 import { useSanityProductsWithTranslations } from '@/composables/useSanityProductsWithTranslations';
 import { useI18n } from 'vue-i18n';
+import { getLocalizedText } from '@/utils/translate';
 
 const { locale } = useI18n();
 
@@ -40,11 +41,40 @@ const selectedCategory = ref('all');
 const loading = ref(false);
 const error = ref(null);
 
+// Computed pour les données localisées
+const localizedShopData = computed(() => {
+	if (!shopData.value) return null;
+
+	return {
+		...shopData.value,
+		categories:
+			shopData.value.categories?.map((category) => ({
+				...category,
+				label: getLocalizedText(category.label, locale.value),
+			})) || [],
+	};
+});
+
+const localizedProducts = computed(() => {
+	if (!products.value) return null;
+
+	return products.value.map((product) => ({
+		...product,
+		translations: {
+			title: getLocalizedText(product.translations?.title, locale.value),
+			description: getLocalizedText(product.translations?.description, locale.value),
+			shortDescription: getLocalizedText(product.translations?.shortDescription, locale.value),
+			addToCartText: getLocalizedText(product.translations?.addToCartText, locale.value),
+			discoverProductText: getLocalizedText(product.translations?.discoverProductText, locale.value),
+		},
+	}));
+});
+
 const loadShopData = async () => {
 	loading.value = true;
 	error.value = null;
 	try {
-		shopData.value = await useSanityShop(locale.value);
+		shopData.value = await useSanityShop();
 	} catch (err) {
 		error.value = err.message;
 		console.error('Shop page error:', err);
@@ -56,7 +86,7 @@ const loadShopData = async () => {
 const loadProducts = async (category = 'all') => {
 	selectedCategory.value = category;
 	try {
-		products.value = await useSanityProductsWithTranslations(locale.value, category);
+		products.value = await useSanityProductsWithTranslations(category);
 	} catch (err) {
 		console.error('Products loading error:', err);
 	}

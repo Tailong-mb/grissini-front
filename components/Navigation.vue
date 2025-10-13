@@ -14,6 +14,7 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 import NoteSvg from '@/components/svg/NoteSvg.vue';
+import { getLocalizedText } from '@/utils/translate';
 
 const { locale } = useI18n();
 const route = useRoute();
@@ -25,7 +26,7 @@ const data = computed(() => {
 	return {
 		mainNavigation: rawData.value.mainNavigation.map((link) => ({
 			...link,
-			text: link.text[locale.value] || link.text.en || link.text,
+			text: getLocalizedText(link.text, locale.value),
 		})),
 	};
 });

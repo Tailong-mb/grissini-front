@@ -1,11 +1,11 @@
 import sanity from '@/utils/sanity';
 
-export const useSanityHub = async (locale = 'en') => {
+export const useSanityHub = async () => {
 	const query = `*[_type == "hub"][0]{
-    "viewText": viewText.${locale},
-    "watchAllText": watchAllText.${locale},
+    "viewText": viewText,
+    "watchAllText": watchAllText,
     "watchAllLink": watchAllLink,
-    "watchText": watchText.${locale},
+    "watchText": watchText,
     "items": items[]{
       thumbnailMobile{
         asset->{
@@ -35,8 +35,8 @@ export const useSanityHub = async (locale = 'en') => {
           originalFilename
         }
       },
-      "title": title.${locale},
-      "subtitle": subtitle.${locale},
+      "title": title,
+      "subtitle": subtitle,
       link
     },
     "seo": seo

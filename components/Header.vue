@@ -19,6 +19,7 @@
 <script setup>
 import LogoSvg from '@/components/svg/LogoSvg.vue';
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
+import { getLocalizedText } from '@/utils/translate';
 
 const { locale } = useI18n();
 const { openNewsletter } = useNewsletter();
@@ -30,16 +31,16 @@ const data = computed(() => {
 	if (!rawData.value) return null;
 
 	return {
-		menuText: rawData.value.menu?.menuText?.[locale.value] || rawData.value.menu?.menuText?.en || rawData.value.menu?.menuText,
-		menuClose: rawData.value.menu?.menuClose?.[locale.value] || rawData.value.menu?.menuClose?.en || rawData.value.menu?.menuClose,
-		description: rawData.value.menu?.description?.[locale.value] || rawData.value.menu?.description?.en || rawData.value.menu?.description,
-		newsletterText: rawData.value.menu?.newsletterText?.[locale.value] || rawData.value.menu?.newsletterText?.en || rawData.value.menu?.newsletterText,
-		contactText: rawData.value.menu?.contactText?.[locale.value] || rawData.value.menu?.contactText?.en || rawData.value.menu?.contactText,
+		menuText: getLocalizedText(rawData.value.menu?.menuText, locale.value),
+		menuClose: getLocalizedText(rawData.value.menu?.menuClose, locale.value),
+		description: getLocalizedText(rawData.value.menu?.description, locale.value),
+		newsletterText: getLocalizedText(rawData.value.menu?.newsletterText, locale.value),
+		contactText: getLocalizedText(rawData.value.menu?.contactText, locale.value),
 		mail: rawData.value.menu?.mail,
 		socialLinks:
 			rawData.value.socialMedia?.socialLinks?.map((link) => ({
 				...link,
-				linkText: link.linkText?.[locale.value] || link.linkText?.en || link.linkText,
+				linkText: getLocalizedText(link.linkText, locale.value),
 			})) || [],
 	};
 });

@@ -34,6 +34,7 @@
 
 <script setup>
 import PartitionSvg from '@/components/svg/PartitionSvg.vue';
+import { getLocalizedText } from '@/utils/translate';
 
 const { isOpen, closeMenu } = useMenu();
 const { openCart } = useCart();
@@ -47,15 +48,15 @@ const data = computed(() => {
 	if (!rawData.value) return null;
 
 	return {
-		description: rawData.value.menu?.description?.[locale.value] || rawData.value.menu?.description?.en || rawData.value.menu?.description,
-		newsletterText: rawData.value.menu?.newsletterText?.[locale.value] || rawData.value.menu?.newsletterText?.en || rawData.value.menu?.newsletterText,
-		contactText: rawData.value.menu?.contactText?.[locale.value] || rawData.value.menu?.contactText?.en || rawData.value.menu?.contactText,
+		description: getLocalizedText(rawData.value.menu?.description, locale.value),
+		newsletterText: getLocalizedText(rawData.value.menu?.newsletterText, locale.value),
+		contactText: getLocalizedText(rawData.value.menu?.contactText, locale.value),
 		mail: rawData.value.menu?.mail,
-		cartMenuTitle: rawData.value.menu?.cartMenuTitle?.[locale.value] || rawData.value.menu?.cartMenuTitle?.en || rawData.value.menu?.cartMenuTitle,
+		cartMenuTitle: getLocalizedText(rawData.value.menu?.cartMenuTitle, locale.value),
 		socialLinks:
 			rawData.value.socialMedia?.socialLinks?.map((link) => ({
 				...link,
-				linkText: link.linkText?.[locale.value] || link.linkText?.en || link.linkText,
+				linkText: getLocalizedText(link.linkText, locale.value),
 			})) || [],
 	};
 });
@@ -67,7 +68,7 @@ const localizedNavigationData = computed(() => {
 	return {
 		mainNavigation: navigationData.value.mainNavigation.map((link) => ({
 			...link,
-			text: link.text?.[locale.value] || link.text?.en || link.text,
+			text: getLocalizedText(link.text, locale.value),
 		})),
 	};
 });
