@@ -82,6 +82,7 @@ const openViewSelector = () => {
 			.title-view {
 				@include switzer(600, normal);
 				font-size: 12rem;
+				text-transform: uppercase;
 				color: $black;
 			}
 			.view-button-scroll {
