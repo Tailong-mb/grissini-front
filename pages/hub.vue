@@ -1,8 +1,17 @@
 <template>
 	<div class="hub-page">
 		<div v-if="hubData && hubData.items && hubData.items.length > 0" class="view-scroll container">
-			<div class="video-scroll-container tb:col-start-6 tb:col-end-12">
-				<div class="video-scroll-item" v-for="(item, index) in hubData.items" :key="item._key">
+			<div class="video-scroll-container dk:col-start-6 dk:col-end-12">
+				<div
+					class="video-scroll-item"
+					v-for="(item, index) in hubData.items"
+					:key="item._key"
+					:ref="
+						(el) => {
+							if (el) videoScrollRefs[index] = el;
+						}
+					"
+				>
 					<Video :thumbnailMobile="item.thumbnailMobile?.asset?.url || ''" :thumbnailDesktop="item.thumbnailDesktop?.asset?.url || ''" :videoMobile="item.videoMobile?.asset?.url || ''" :videoDesktop="item.videoDesktop?.asset?.url || ''" :isActive="currentActiveItem === index" />
 				</div>
 			</div>
@@ -27,7 +36,7 @@
 			<HubVideo :items="hubData.items" :open="viewMode === 'watch'" type="hub" />
 		</div>
 		<div class="view-selector container">
-			<div class="view-selector-content tb:col-start-4 tb:col-end-10">
+			<div class="view-selector-content dk:col-start-4 dk:col-end-10">
 				<div class="title-view">{{ getLocalizedText(viewText, locale) }}</div>
 				<button class="view-button-scroll" @click="openViewSelector" :class="{ active: viewMode === 'scroll' }"></button>
 				<button class="view-button-watch" @click="openViewSelector" :class="{ active: viewMode === 'watch' }"></button>
@@ -37,12 +46,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed, nextTick, watch } from 'vue';
 import { useSanityHub } from '@/composables/useSanityHub';
 import { useI18n } from 'vue-i18n';
 import HubVideo from '@/components/HubVideo.vue';
 import Video from '@/components/Video.vue';
 import { getLocalizedText } from '@/utils/translate';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 const { locale } = useI18n();
 
@@ -52,6 +63,9 @@ const error = ref(null);
 const viewMode = ref('scroll');
 const currentActiveItem = ref(0);
 const { $lenis } = useNuxtApp();
+const videoScrollRefs = ref([]);
+const scrollTriggers = ref([]);
+const isDesktop = ref(false);
 
 const viewText = computed(() => getLocalizedText(hubData.value?.viewText, locale.value));
 
@@ -76,11 +90,54 @@ const loadHubData = async () => {
 const setActiveItem = (index) => {
 	console.log('Setting active item to:', index);
 	currentActiveItem.value = index;
+
+	// On desktop, scroll to center the video
+	if (isDesktop.value && videoScrollRefs.value[index]) {
+		const targetElement = videoScrollRefs.value[index];
+		const targetPosition = targetElement.offsetTop - window.innerHeight / 2 + targetElement.offsetHeight / 2;
+
+		if ($lenis) {
+			$lenis.scrollTo(targetPosition, { duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+		} else {
+			window.scrollTo({ top: targetPosition, behavior: 'smooth' });
+		}
+	}
 };
 
-// Scroll handler to update active item
+// Create ScrollTrigger for desktop
+const createScrollTriggers = () => {
+	if (!isDesktop.value || !hubData.value?.items) return;
+
+	// Clean up existing triggers
+	scrollTriggers.value.forEach((trigger) => trigger.kill());
+	scrollTriggers.value = [];
+
+	// Create ScrollTrigger for each video
+	hubData.value.items.forEach((item, index) => {
+		const element = videoScrollRefs.value[index];
+		if (!element) return;
+
+		const trigger = ScrollTrigger.create({
+			trigger: element,
+			start: 'top center',
+			end: 'bottom center',
+			onEnter: () => {
+				console.log('ScrollTrigger: Video', index, 'entered center');
+				currentActiveItem.value = index;
+			},
+			onEnterBack: () => {
+				console.log('ScrollTrigger: Video', index, 'entered center (back)');
+				currentActiveItem.value = index;
+			},
+		});
+
+		scrollTriggers.value.push(trigger);
+	});
+};
+
+// Scroll handler for mobile (fallback)
 const handleScroll = (scrollInfo) => {
-	if (!hubData.value?.items) return;
+	if (!hubData.value?.items || isDesktop.value) return;
 
 	const scrollY = scrollInfo?.scroll || window.scrollY;
 	const windowHeight = window.innerHeight;
@@ -88,7 +145,7 @@ const handleScroll = (scrollInfo) => {
 	const newActiveItem = Math.floor(scrollY / itemHeight);
 
 	if (newActiveItem >= 0 && newActiveItem < hubData.value.items.length && newActiveItem !== currentActiveItem.value) {
-		console.log('Scroll changing active item to:', newActiveItem);
+		console.log('Mobile scroll changing active item to:', newActiveItem);
 		currentActiveItem.value = newActiveItem;
 	}
 };
@@ -102,21 +159,52 @@ const openViewSelector = () => {
 onMounted(async () => {
 	await loadHubData();
 
-	// Use Lenis scroll event if available, otherwise fallback to window scroll
-	if ($lenis) {
-		$lenis.on('scroll', handleScroll);
+	// Detect desktop
+	isDesktop.value = window.matchMedia('(min-width: 1024px)').matches;
+
+	// Register ScrollTrigger plugin
+	gsap.registerPlugin(ScrollTrigger);
+
+	// Wait for DOM to be ready
+	await nextTick();
+
+	if (isDesktop.value) {
+		// Use ScrollTrigger for desktop
+		createScrollTriggers();
 	} else {
-		window.addEventListener('scroll', () => handleScroll({ scroll: window.scrollY }));
+		// Use Lenis scroll event for mobile
+		if ($lenis) {
+			$lenis.on('scroll', handleScroll);
+		} else {
+			window.addEventListener('scroll', () => handleScroll({ scroll: window.scrollY }));
+		}
 	}
 });
 
 onUnmounted(() => {
+	// Clean up ScrollTrigger
+	scrollTriggers.value.forEach((trigger) => trigger.kill());
+	scrollTriggers.value = [];
+
+	// Clean up scroll listeners
 	if ($lenis) {
 		$lenis.off('scroll', handleScroll);
 	} else {
 		window.removeEventListener('scroll', handleScroll);
 	}
 });
+
+// Watch for data changes to recreate ScrollTriggers
+watch(
+	[hubData, isDesktop],
+	async () => {
+		if (hubData.value?.items && isDesktop.value) {
+			await nextTick();
+			createScrollTriggers();
+		}
+	},
+	{ deep: true }
+);
 </script>
 
 <style lang="scss" scoped>
@@ -134,11 +222,12 @@ onUnmounted(() => {
 			pointer-events: none;
 			overflow: hidden;
 
-			@include tablet {
+			@include desktop {
 				position: relative;
 				display: flex;
 				flex-direction: column;
 				gap: 10rem;
+				padding: calc(50dvh - 186rem) 0;
 			}
 
 			.video-scroll-item {
@@ -149,7 +238,7 @@ onUnmounted(() => {
 				height: 100%;
 				object-fit: cover;
 
-				@include tablet {
+				@include desktop {
 					position: relative;
 					width: 100%;
 					aspect-ratio: 708/372;
@@ -172,7 +261,7 @@ onUnmounted(() => {
 			height: 100dvh;
 			gap: 32px;
 
-			@include tablet {
+			@include desktop {
 				position: fixed;
 				left: 127rem;
 				width: 225rem;
@@ -198,7 +287,7 @@ onUnmounted(() => {
 					color: $white;
 					opacity: 0.4;
 
-					@include tablet {
+					@include desktop {
 						color: $black;
 					}
 				}
@@ -209,7 +298,7 @@ onUnmounted(() => {
 						text-transform: uppercase;
 						color: $white;
 
-						@include tablet {
+						@include desktop {
 							color: $black;
 						}
 					}
@@ -219,10 +308,50 @@ onUnmounted(() => {
 						color: $white;
 						opacity: 0.4;
 
-						@include tablet {
+						@include desktop {
 							color: $black;
 						}
 					}
+				}
+			}
+
+			.view-all {
+				position: relative;
+				@include switzer(500, normal);
+				font-size: 12rem;
+				text-transform: uppercase;
+				color: $black;
+				background-color: $white;
+				padding: 16rem 37rem;
+				width: fit-content;
+				border: solid 1px $white;
+				margin: 60rem auto 0 auto;
+				padding-bottom: 2rem;
+
+				&::after {
+					content: '';
+					position: absolute;
+					bottom: 0;
+					left: 0;
+					width: 100%;
+					height: 1px;
+					background-color: $black;
+					transform: scale3d(0, 1, 1);
+					transform-origin: right center;
+					transition:
+						transform 0.5s $out-cubic,
+						opacity 0.3s linear;
+				}
+				&:hover {
+					&::after {
+						transform: scale3d(1, 1, 1);
+						transform-origin: left center;
+					}
+				}
+
+				@include desktop {
+					border: none;
+					padding: 0rem;
 				}
 			}
 		}
@@ -233,7 +362,7 @@ onUnmounted(() => {
 		bottom: 8rem;
 		display: none;
 
-		@include tablet {
+		@include desktop {
 			display: grid;
 		}
 

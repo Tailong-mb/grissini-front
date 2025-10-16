@@ -9,7 +9,7 @@
 		</div>
 
 		<!-- Video -->
-		<video ref="videoRef" class="video-element" :class="{ playing: isPlaying || isActive, visible: isActive }" :poster="thumbnailDesktop" @click="togglePlay" @ended="onVideoEnded" muted playsinline webkit-playsinline>
+		<video ref="videoRef" class="video-element" :class="{ playing: isPlaying || isActive, visible: isActive }" :poster="thumbnailDesktop" @click="togglePlay" @ended="onVideoEnded" muted playsinline webkit-playsinline loop>
 			<source :src="videoMobile" media="(max-width: 768px)" type="video/mp4" />
 			<source :src="videoDesktop" type="video/mp4" />
 			Votre navigateur ne supporte pas la lecture vidéo.
@@ -153,7 +153,7 @@ defineExpose({
 		opacity: 1;
 	}
 
-	@include tablet {
+	@include desktop {
 		opacity: 1;
 	}
 
@@ -167,7 +167,7 @@ defineExpose({
 		transition: opacity 0.7s linear;
 		opacity: 0;
 
-		@include tablet {
+		@include desktop {
 			opacity: 1;
 		}
 

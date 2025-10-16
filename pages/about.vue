@@ -7,7 +7,7 @@
 		</div>
 
 		<div class="view-selector container">
-			<div class="view-selector-content tb:col-start-4 tb:col-end-10">
+			<div class="view-selector-content dk:col-start-4 dk:col-end-10">
 				<div class="title-view">{{ aboutData?.viewText }}</div>
 				<button class="view-button-scroll" @click="openViewSelector" :class="{ active: viewMode === 'scroll' }"></button>
 				<button class="view-button-watch" @click="openViewSelector" :class="{ active: viewMode === 'watch' }"></button>
@@ -92,7 +92,7 @@ const openViewSelector = () => {
 		bottom: 8rem;
 		display: none;
 
-		@include tablet {
+		@include desktop {
 			display: grid;
 		}
 
