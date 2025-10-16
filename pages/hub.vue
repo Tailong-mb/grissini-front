@@ -66,6 +66,7 @@ const { $lenis } = useNuxtApp();
 const videoScrollRefs = ref([]);
 const scrollTriggers = ref([]);
 const isDesktop = ref(false);
+const isAutoCentering = ref(false);
 
 const viewText = computed(() => getLocalizedText(hubData.value?.viewText, locale.value));
 
@@ -86,33 +87,55 @@ const loadHubData = async () => {
 	}
 };
 
+// Center the current active item
+const centerActiveItem = (force = false) => {
+	if (!isDesktop.value || !videoScrollRefs.value[currentActiveItem.value] || isAutoCentering.value) return;
+
+	const targetElement = videoScrollRefs.value[currentActiveItem.value];
+	const targetPosition = targetElement.offsetTop - window.innerHeight / 2 + targetElement.offsetHeight / 2;
+	const currentScroll = window.scrollY;
+	const tolerance = 50; // pixels tolerance
+
+	// Check if already centered (unless forced)
+	if (!force && Math.abs(currentScroll - targetPosition) < tolerance) {
+		return;
+	}
+
+	isAutoCentering.value = true;
+
+	if ($lenis) {
+		$lenis.scrollTo(targetPosition, {
+			duration: 1.2,
+			easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+			onComplete: () => {
+				isAutoCentering.value = false;
+			},
+		});
+	} else {
+		window.scrollTo({ top: targetPosition, behavior: 'smooth' });
+		setTimeout(() => {
+			isAutoCentering.value = false;
+		}, 1200);
+	}
+};
+
 // Set active item manually (from click)
 const setActiveItem = (index) => {
 	console.log('Setting active item to:', index);
 	currentActiveItem.value = index;
 
 	// On desktop, scroll to center the video
-	if (isDesktop.value && videoScrollRefs.value[index]) {
-		const targetElement = videoScrollRefs.value[index];
-		const targetPosition = targetElement.offsetTop - window.innerHeight / 2 + targetElement.offsetHeight / 2;
-
-		if ($lenis) {
-			$lenis.scrollTo(targetPosition, { duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
-		} else {
-			window.scrollTo({ top: targetPosition, behavior: 'smooth' });
-		}
+	if (isDesktop.value) {
+		centerActiveItem(true); // Force centering on click
 	}
 };
 
-// Create ScrollTrigger for desktop
 const createScrollTriggers = () => {
 	if (!isDesktop.value || !hubData.value?.items) return;
 
-	// Clean up existing triggers
 	scrollTriggers.value.forEach((trigger) => trigger.kill());
 	scrollTriggers.value = [];
 
-	// Create ScrollTrigger for each video
 	hubData.value.items.forEach((item, index) => {
 		const element = videoScrollRefs.value[index];
 		if (!element) return;
@@ -171,6 +194,23 @@ onMounted(async () => {
 	if (isDesktop.value) {
 		// Use ScrollTrigger for desktop
 		createScrollTriggers();
+
+		// Add Lenis scroll end listener for auto-centering
+		if ($lenis) {
+			let scrollTimeout;
+			$lenis.on('scroll', (scrollInfo) => {
+				// Clear previous timeout
+				clearTimeout(scrollTimeout);
+
+				// Check if scroll has ended (velocity is very low)
+				if (Math.abs(scrollInfo.velocity) < 0.1) {
+					// Small delay to ensure scroll has completely stopped
+					scrollTimeout = setTimeout(() => {
+						centerActiveItem();
+					}, 200);
+				}
+			});
+		}
 	} else {
 		// Use Lenis scroll event for mobile
 		if ($lenis) {
