@@ -1,7 +1,7 @@
 <template>
 	<div class="video-container" :class="{ playing: isPlaying }">
 		<!-- Thumbnail -->
-		<div class="video-thumbnail" :class="{ hidden: isPlaying }">
+		<div class="video-thumbnail" :class="{ hidden: isPlaying || isActive }">
 			<picture>
 				<source :srcset="thumbnailMobile" media="(max-width: 768px)" />
 				<img :src="thumbnailDesktop" :alt="alt" />
@@ -9,7 +9,7 @@
 		</div>
 
 		<!-- Video -->
-		<video ref="videoRef" class="video-element" :class="{ playing: isPlaying }" :poster="thumbnailDesktop" @click="togglePlay" @ended="onVideoEnded">
+		<video ref="videoRef" class="video-element" :class="{ playing: isPlaying || isActive, visible: isActive }" :poster="thumbnailDesktop" @click="togglePlay" @ended="onVideoEnded" muted playsinline webkit-playsinline>
 			<source :src="videoMobile" media="(max-width: 768px)" type="video/mp4" />
 			<source :src="videoDesktop" type="video/mp4" />
 			Votre navigateur ne supporte pas la lecture vidéo.
@@ -18,6 +18,7 @@
 </template>
 
 <script setup>
+import { ref, onMounted, onUnmounted, watch, readonly } from 'vue';
 const props = defineProps({
 	// Thumbnails
 	thumbnailMobile: {
@@ -47,12 +48,18 @@ const props = defineProps({
 		type: Boolean,
 		default: false,
 	},
+	// Active state (for external control)
+	isActive: {
+		type: Boolean,
+		default: false,
+	},
 });
 
 const emit = defineEmits(['play', 'pause', 'ended']);
 
 const videoRef = ref(null);
 const isPlaying = ref(false);
+const isMobile = ref(false);
 
 const togglePlay = () => {
 	if (isPlaying.value) {
@@ -71,6 +78,8 @@ const playVideo = async () => {
 		emit('play');
 	} catch (error) {
 		console.error('Error playing video:', error);
+		// On mobile, if autoplay fails, we still want to show the video
+		// The play overlay will handle manual play
 	}
 };
 
@@ -87,21 +96,41 @@ const onVideoEnded = () => {
 	emit('ended');
 };
 
+watch(
+	() => props.isActive,
+	(newActive) => {
+		if (newActive) {
+			if (videoRef.value) {
+				videoRef.value.currentTime = 0.1;
+			}
+			playVideo().catch(() => {
+				console.warn('Autoplay failed');
+			});
+		} else {
+			pauseVideo();
+		}
+	},
+	{ immediate: true }
+);
+
 // Auto play if specified
 onMounted(() => {
-	if (props.autoplay) {
-		playVideo();
+	// Detect mobile
+	isMobile.value = window.innerWidth <= 768;
+
+	if (props.autoplay || props.isActive) {
+		playVideo().catch(() => {
+			console.warn('Autoplay failed on mount');
+		});
 	}
 });
 
-// Cleanup on unmount
 onUnmounted(() => {
 	if (videoRef.value) {
 		videoRef.value.pause();
 	}
 });
 
-// Expose methods for parent components
 defineExpose({
 	play: playVideo,
 	pause: pauseVideo,
@@ -117,6 +146,16 @@ defineExpose({
 	height: 100%;
 	overflow: hidden;
 	background-color: $black;
+	opacity: 0;
+	transition: opacity 0.3s linear;
+
+	&.playing {
+		opacity: 1;
+	}
+
+	@include tablet {
+		opacity: 1;
+	}
 
 	.video-thumbnail {
 		position: absolute;
@@ -125,7 +164,12 @@ defineExpose({
 		width: 100%;
 		height: 100%;
 		z-index: 2;
-		transition: opacity 0.3s linear;
+		transition: opacity 0.7s linear;
+		opacity: 0;
+
+		@include tablet {
+			opacity: 1;
+		}
 
 		&.hidden {
 			opacity: 0;
@@ -144,9 +188,10 @@ defineExpose({
 		height: 100%;
 		object-fit: cover;
 		opacity: 0;
-		transition: opacity 0.3s linear;
+		transition: opacity 0.7s linear;
 
-		&.playing {
+		// Show video when it's active (both mobile and desktop)
+		&.visible {
 			opacity: 1;
 		}
 	}
