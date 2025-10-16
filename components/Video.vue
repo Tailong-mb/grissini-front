@@ -14,6 +14,10 @@
 			<source :src="videoDesktop" type="video/mp4" />
 			Votre navigateur ne supporte pas la lecture vidéo.
 		</video>
+
+		<a v-if="linkUrl" :href="linkUrl" class="video-link" target="_blank" rel="noopener noreferrer">
+			{{ linkText }}
+		</a>
 	</div>
 </template>
 
@@ -52,6 +56,15 @@ const props = defineProps({
 	isActive: {
 		type: Boolean,
 		default: false,
+	},
+
+	linkUrl: {
+		type: String,
+		default: '',
+	},
+	linkText: {
+		type: String,
+		default: '',
 	},
 });
 
@@ -193,6 +206,35 @@ defineExpose({
 		// Show video when it's active (both mobile and desktop)
 		&.visible {
 			opacity: 1;
+		}
+	}
+
+	.video-link {
+		position: absolute;
+		bottom: 32rem;
+		left: 50%;
+		transform: translateX(-50%);
+		font-size: 12rem;
+		@include switzer(600, normal);
+		color: $black;
+		text-transform: uppercase;
+		background-color: $white;
+		padding: 16rem 37rem;
+		width: fit-content;
+		border: solid 1px $white;
+		margin: 60rem auto 0 auto;
+		transition: opacity 0.3s linear;
+		opacity: 0.8;
+
+		&:hover {
+			opacity: 1;
+		}
+
+		@include desktop {
+			bottom: 17rem;
+			right: 17rem;
+			left: auto;
+			transform: translateX(0);
 		}
 	}
 }

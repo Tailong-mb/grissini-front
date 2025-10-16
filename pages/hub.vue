@@ -12,7 +12,15 @@
 						}
 					"
 				>
-					<Video :thumbnailMobile="item.thumbnailMobile?.asset?.url || ''" :thumbnailDesktop="item.thumbnailDesktop?.asset?.url || ''" :videoMobile="item.videoMobile?.asset?.url || ''" :videoDesktop="item.videoDesktop?.asset?.url || ''" :isActive="currentActiveItem === index" />
+					<Video
+						:thumbnailMobile="item.thumbnailMobile?.asset?.url || ''"
+						:thumbnailDesktop="item.thumbnailDesktop?.asset?.url || ''"
+						:videoMobile="item.videoMobile?.asset?.url || ''"
+						:videoDesktop="item.videoDesktop?.asset?.url || ''"
+						:isActive="currentActiveItem === index"
+						:linkUrl="item.link || ''"
+						:linkText="getLocalizedText(hubData.watchText, locale) || ''"
+					/>
 				</div>
 			</div>
 			<div class="view-scroll-content col-start-2 col-end-5">
