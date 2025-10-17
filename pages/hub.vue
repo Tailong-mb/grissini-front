@@ -1,6 +1,6 @@
 <template>
 	<div class="hub-page">
-		<div v-if="hubData && hubData.items && hubData.items.length > 0" class="view-scroll container">
+		<div v-if="hubData && hubData.items && hubData.items.length > 0" class="view-scroll container" :class="{ 'view-scroll-active': viewMode === 'scroll' }">
 			<div class="video-scroll-container dk:col-start-6 dk:col-end-12">
 				<div
 					class="video-scroll-item"
@@ -261,6 +261,17 @@ watch(
 	min-height: 100vh;
 
 	.view-scroll {
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.7s linear;
+		overflow: hidden;
+		height: 100dvh;
+
+		&.view-scroll-active {
+			opacity: 1;
+			pointer-events: all;
+			height: auto;
+		}
 		.video-scroll-container {
 			position: fixed;
 			width: 100%;
