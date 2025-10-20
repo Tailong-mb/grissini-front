@@ -70,7 +70,10 @@ const props = defineProps({
 	}
 
 	.content-container {
+		margin-top: 100px;
+
 		@include tablet {
+			margin-top: 0;
 			display: flex;
 			flex-direction: column;
 			justify-content: flex-end;
