@@ -60,7 +60,7 @@ onMounted(async () => {
 
 	button {
 		@include tablet {
-			pointer-events: none;
+			pointer-events: none !important;
 			opacity: 0;
 		}
 	}

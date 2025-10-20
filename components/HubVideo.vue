@@ -20,7 +20,7 @@
 
 		<!-- Thumbnails container -->
 		<div class="container thumbnails-container">
-			<div v-for="(item, index) in items" :key="item._key" class="thumbnail-item" :class="{ open: open, type }" @mouseenter="handleMouseEnter(index)" @mouseleave="handleMouseLeave()">
+			<div v-for="(item, index) in items" :key="item._key" class="thumbnail-item" :class="{ open: open, about: type === 'about' }" @mouseenter="handleMouseEnter(index)" @mouseleave="handleMouseLeave()">
 				<img :src="getThumbnailUrl(item)" :alt="item.title" class="thumbnail-image" :class="{ hover: hoverItem === index || hoverItem === null }" />
 			</div>
 		</div>
@@ -201,6 +201,11 @@ onUnmounted(() => {
 			border: solid 1px rgb($white, 0.3);
 			opacity: 0;
 			transition: opacity 0.7s linear;
+
+			&.about {
+				width: 111rem;
+				height: 145rem;
+			}
 
 			&:nth-child(1) {
 				transition-delay: 0.1s;

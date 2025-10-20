@@ -1,14 +1,18 @@
 <template>
 	<div class="about-page">
-		<div v-if="loading" class="loading">Loading...</div>
-		<div v-else-if="error" class="error">Error: {{ error }}</div>
-		<div v-else-if="aboutData && mappedItems && mappedItems.length > 0">
+		<!-- Scroll View -->
+		<div v-if="aboutData && mappedItems && mappedItems.length > 0" class="view-scroll" :class="{ 'view-scroll-active': viewMode === 'scroll' }">
+			<AboutItem v-for="(item, index) in aboutData.items" :key="item._key || index" :item="item" :position="index % 2 === 0 ? 'left' : 'right'" />
+		</div>
+		<!-- Watch View -->
+		<div v-if="aboutData && mappedItems && mappedItems.length > 0" class="view-watch" :class="{ 'view-watch-active': viewMode === 'watch' }">
 			<HubVideo :items="mappedItems" :open="viewMode === 'watch'" type="about" />
 		</div>
 
+		<!-- View Selector -->
 		<div class="view-selector container">
 			<div class="view-selector-content dk:col-start-4 dk:col-end-10">
-				<div class="title-view">{{ aboutData?.viewText }}</div>
+				<div class="title-view">{{ getLocalizedText(aboutData?.viewText, locale) }}</div>
 				<button class="view-button-scroll" @click="openViewSelector" :class="{ active: viewMode === 'scroll' }"></button>
 				<button class="view-button-watch" @click="openViewSelector" :class="{ active: viewMode === 'watch' }"></button>
 			</div>
@@ -21,6 +25,8 @@ import { ref, onMounted, computed } from 'vue';
 import { useSanityAbout } from '@/composables/useSanityAbout';
 import { useI18n } from 'vue-i18n';
 import HubVideo from '@/components/HubVideo.vue';
+import AboutItem from '@/components/AboutItem.vue';
+import { getLocalizedText } from '@/utils/translate';
 
 const { locale } = useI18n();
 const { $lenis } = useNuxtApp();
@@ -35,9 +41,9 @@ const mappedItems = computed(() => {
 	const items = aboutData.value?.items || [];
 	return items.map((it) => ({
 		_key: it._key || `${it.title}-${Math.random().toString(36).slice(2)}`,
-		title: it.title || '',
-		subtitle: it.description || '',
-		link: '#',
+		title: getLocalizedText(it.title, locale.value) || '',
+		subtitle: getLocalizedText(it.description, locale.value) || '',
+		link: it.link || '#',
 		thumbnailMobile: it.thumbnail ? { asset: { url: it.thumbnail.asset?.url } } : null,
 		thumbnailDesktop: it.thumbnail ? { asset: { url: it.thumbnail.asset?.url } } : null,
 		videoMobile: it.video ? { asset: { url: it.video.asset?.url } } : null,
@@ -53,6 +59,11 @@ const loadAboutData = async () => {
 		console.log('=== ABOUT PAGE DATA ===');
 		console.log('Locale:', locale.value);
 		console.log('About Data:', aboutData.value);
+		console.log('Items:', aboutData.value?.items);
+		if (aboutData.value?.items?.[0]) {
+			console.log('First item:', aboutData.value.items[0]);
+			console.log('Social links:', aboutData.value.items[0].socialLinks);
+		}
 		console.log('========================');
 	} catch (err) {
 		error.value = err.message;
@@ -85,6 +96,37 @@ const openViewSelector = () => {
 		justify-content: center;
 		min-height: 60vh;
 		font-size: 18rem;
+	}
+
+	.view-scroll {
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.7s linear;
+		overflow: hidden;
+		height: 100dvh;
+
+		&.view-scroll-active {
+			opacity: 1;
+			pointer-events: all;
+			height: auto;
+		}
+	}
+
+	.view-watch {
+		position: absolute;
+		top: 0;
+		left: 0;
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.7s linear;
+		overflow: hidden;
+		height: 100dvh;
+
+		&.view-watch-active {
+			opacity: 1;
+			pointer-events: all;
+			height: auto;
+		}
 	}
 
 	.view-selector {
