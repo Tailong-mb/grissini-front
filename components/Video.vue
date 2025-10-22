@@ -73,26 +73,36 @@ const emit = defineEmits(['play', 'pause', 'ended']);
 const videoRef = ref(null);
 const isPlaying = ref(false);
 const isMobile = ref(false);
+const autoplayAttempted = ref(false);
 
 const togglePlay = () => {
 	if (isPlaying.value) {
 		pauseVideo();
 	} else {
+		// Reset autoplay flag when user manually interacts
+		autoplayAttempted.value = false;
 		playVideo();
 	}
 };
 
 const playVideo = async () => {
-	if (!videoRef.value) return;
+	if (!videoRef.value || isPlaying.value) return;
 
 	try {
+		// Reset video to beginning if it's already at the end
+		if (videoRef.value.ended) {
+			videoRef.value.currentTime = 0;
+		}
+
 		await videoRef.value.play();
 		isPlaying.value = true;
 		emit('play');
 	} catch (error) {
-		console.error('Error playing video:', error);
-		// On mobile, if autoplay fails, we still want to show the video
-		// The play overlay will handle manual play
+		// Only log the error if it's not a common autoplay restriction
+		if (!error.name?.includes('NotAllowedError') && !error.message?.includes('autoplay')) {
+			console.warn('Video play failed:', error);
+		}
+		// Don't set isPlaying to true if play failed
 	}
 };
 
@@ -114,13 +124,23 @@ watch(
 	(newActive) => {
 		if (newActive) {
 			if (videoRef.value) {
-				videoRef.value.currentTime = 0.1;
+				videoRef.value.currentTime = 0;
 			}
-			playVideo().catch(() => {
-				console.warn('Autoplay failed');
-			});
+			// Only attempt autoplay if we haven't already tried and failed
+			if (!autoplayAttempted.value) {
+				autoplayAttempted.value = true;
+				playVideo().catch(() => {
+					// Autoplay failed, but that's expected on many devices
+					// Reset the flag after a delay to allow retry on user interaction
+					setTimeout(() => {
+						autoplayAttempted.value = false;
+					}, 2000);
+				});
+			}
 		} else {
 			pauseVideo();
+			// Reset autoplay flag when video becomes inactive
+			autoplayAttempted.value = false;
 		}
 	},
 	{ immediate: true }
@@ -132,8 +152,12 @@ onMounted(() => {
 	isMobile.value = window.innerWidth <= 768;
 
 	if (props.autoplay || props.isActive) {
+		autoplayAttempted.value = true;
 		playVideo().catch(() => {
-			console.warn('Autoplay failed on mount');
+			// Autoplay failed on mount, reset flag after delay
+			setTimeout(() => {
+				autoplayAttempted.value = false;
+			}, 2000);
 		});
 	}
 });

@@ -18,7 +18,6 @@
 				</NuxtLink>
 			</div>
 		</div>
-		x
 		<div v-if="loading">Loading products...</div>
 		<div v-if="error">Error: {{ error }}</div>
 	</div>

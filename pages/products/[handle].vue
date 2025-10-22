@@ -11,7 +11,7 @@
 					<p>{{ variant.title }}</p>
 				</div>
 			</div>
-			<p>{{ localizedProduct?.priceRange?.minVariantPrice }}</p>
+			<p class="price">{{ formatPrice(localizedProduct?.priceRange?.minVariantPrice) }}</p>
 			<div v-if="error" class="error-message">
 				{{ error }}
 			</div>
@@ -34,6 +34,31 @@ import { getLocalizedText } from '@/utils/translate';
 const route = useRoute();
 const { locale } = useI18n();
 const { addToCart, loading: cartLoading, cart: cartData, openCart } = useCart();
+
+// Formater le prix
+const formatPrice = (priceData) => {
+	if (!priceData) return 'Prix non disponible';
+
+	// Si c'est déjà un objet avec amount et currencyCode
+	if (typeof priceData === 'object' && priceData.amount && priceData.currencyCode) {
+		const amount = parseFloat(priceData.amount);
+		return new Intl.NumberFormat('fr-FR', {
+			style: 'currency',
+			currency: priceData.currencyCode,
+		}).format(amount);
+	}
+
+	// Si c'est juste un string/number
+	if (typeof priceData === 'string' || typeof priceData === 'number') {
+		const amount = parseFloat(priceData);
+		return new Intl.NumberFormat('fr-FR', {
+			style: 'currency',
+			currency: 'EUR', // Devise par défaut
+		}).format(amount);
+	}
+
+	return 'Prix non disponible';
+};
 
 const product = ref(null);
 const selectedVariant = ref(null);
@@ -223,6 +248,19 @@ onMounted(async () => {
 					background-color: $black;
 					color: $white;
 				}
+			}
+		}
+
+		.price {
+			margin-top: 50rem;
+			margin-bottom: 39rem;
+			@include switzer(600, normal);
+			font-size: 12rem;
+			color: $black;
+
+			@include tablet {
+				margin-top: 60rem;
+				margin-bottom: 50rem;
 			}
 		}
 

@@ -2,16 +2,14 @@
 	<div class="home-page" ref="homePageRef">
 		<div class="container-wrapper" ref="containerWrapperRef">
 			<div class="images-container">
-				<div v-for="item in homeData?.items" :key="item._key" class="image-wrapper" ref="imageWrapperRefs">
-					<div class="image-placeholder">
-						<img v-if="item.thumbnail?.url" :src="item.thumbnail.url" :alt="getLocalizedTitle(item.title)" ref="imageRefs" />
-					</div>
-				</div>
-			</div>
-			<div class="images-container second">
-				<div v-for="item in homeData?.items" :key="`second-${item._key}`" class="image-wrapper" ref="imageWrapperRefs">
-					<div class="image-placeholder">
-						<img v-if="item.thumbnail?.url" :src="item.thumbnail.url" :alt="getLocalizedTitle(item.title)" ref="imageRefs" />
+				<div v-for="(item, index) in customItems" :key="`${item._key}-${index}`" class="image-wrapper" ref="imageWrapperRefs">
+					<div class="video-container" :class="{ active: currentActiveItem === index }">
+						<div class="video-thumbnail" :class="{ hidden: currentActiveItem === index }">
+							<img v-if="item.thumbnail?.url" :src="item.thumbnail.url" :alt="getLocalizedTitle(item.title)" />
+						</div>
+						<video v-if="item.video?.url" ref="videoRefs" class="video-element" :class="{ visible: currentActiveItem === index }" :poster="item.thumbnail?.url" loop playsinline webkit-playsinline>
+							<source :src="item.video.url" type="video/mp4" />
+						</video>
 					</div>
 				</div>
 			</div>
@@ -20,7 +18,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick, watch, computed } from 'vue';
 import { useSanityHome } from '@/composables/useSanityHome';
 import { useI18n } from 'vue-i18n';
 import Lenis from 'lenis';
@@ -33,22 +31,30 @@ const homeData = ref(null);
 const loadingHome = ref(false);
 const errorHome = ref(null);
 
-// Refs for scroll system
 const homePageRef = ref(null);
 const containerWrapperRef = ref(null);
 const lenisInstance = ref(null);
-const imageRefs = ref([]);
 const imageWrapperRefs = ref([]);
+const videoRefs = ref([]);
 const isDesktop = ref(false);
-const tlArray = ref([]);
+const currentActiveItem = ref(2);
+const scrollTriggers = ref([]);
+const isChangingActiveItem = ref(false);
+const isInitialized = ref(false);
+
+const customItems = computed(() => {
+	if (!homeData.value?.items) return [];
+
+	const items = homeData.value.items;
+	const duplicatedItems = [...items, ...items.slice(0, isDesktop.value ? 4 : 5)];
+	return duplicatedItems;
+});
 
 const getLocalizedTitle = (titleObject) => {
 	if (!titleObject) return '';
 
-	// If it's already a string, return it
 	if (typeof titleObject === 'string') return titleObject;
 
-	// If it's an object with locale keys
 	if (typeof titleObject === 'object') {
 		return titleObject[locale.value] || titleObject.en || titleObject.fr || '';
 	}
@@ -61,20 +67,6 @@ const loadHomeData = async () => {
 	errorHome.value = null;
 	try {
 		homeData.value = await useSanityHome();
-		console.log('=== HOME PAGE DATA ===');
-		console.log('Locale:', locale.value);
-		console.log('Home Data:', homeData.value);
-		console.log('Title:', homeData.value?.title);
-		console.log('Items:', homeData.value?.items);
-		console.log('Items length:', homeData.value?.items?.length);
-		if (homeData.value?.items?.[0]) {
-			console.log('First item:', homeData.value.items[0]);
-			console.log('First item title:', homeData.value.items[0].title);
-			console.log('First item description:', homeData.value.items[0].description);
-			console.log('First item linkName:', homeData.value.items[0].linkName);
-			console.log('First item url:', homeData.value.items[0].url);
-		}
-		console.log('=====================');
 	} catch (err) {
 		errorHome.value = err.message;
 		console.error('Home page error:', err);
@@ -83,42 +75,73 @@ const loadHomeData = async () => {
 	}
 };
 
-const openAnimation = () => {
-	const tl = gsap.timeline();
+const setActiveItem = (index) => {
+	if (!isInitialized.value || isChangingActiveItem.value || currentActiveItem.value === index) {
+		return;
+	}
 
-	tl.fromTo(
-		imageWrapperRefs.value,
-		{
-			clipPath: 'inset(0 0 100% 0)',
-		},
-		{
-			clipPath: 'inset(0 0 0% 0)',
-			duration: 1.2,
-			ease: 'power2.out',
-		},
-		0
-	);
+	isChangingActiveItem.value = true;
+	currentActiveItem.value = index;
+
+	setTimeout(() => {
+		isChangingActiveItem.value = false;
+	}, 100);
 };
 
-const initScrollTriggers = () => {
-	imageWrapperRefs.value.forEach((imageRefData, index) => {
-		if (imageRefData instanceof HTMLElement) {
-			const tl = gsap.timeline({
-				scrollTrigger: {
-					trigger: imageRefData,
-					scroller: homePageRef.value,
-					horizontal: isDesktop.value,
-					start: 'top bottom',
-					end: 'bottom top',
-					scrub: true,
-				},
-			});
-
-			tlArray.value.push(tl);
+watch(currentActiveItem, (newActive) => {
+	videoRefs.value.forEach((video, index) => {
+		if (video && video.pause && index !== newActive) {
+			video.pause();
+			video.currentTime = 0;
 		}
 	});
 
-	ScrollTrigger.refresh();
+	if (videoRefs.value[newActive]) {
+		const activeVideo = videoRefs.value[newActive];
+		if (activeVideo && activeVideo.play) {
+			if (activeVideo.ended) {
+				activeVideo.currentTime = 0;
+			}
+
+			setTimeout(() => {
+				activeVideo.play().catch((error) => {
+					if (!error.name?.includes('NotAllowedError') && !error.message?.includes('autoplay') && !error.name?.includes('AbortError')) {
+						console.warn('Video play failed:', error);
+					}
+				});
+			}, 50);
+		}
+	}
+});
+
+const createScrollTriggers = () => {
+	if (!customItems.value.length) return;
+
+	scrollTriggers.value.forEach((trigger) => trigger.kill());
+	scrollTriggers.value = [];
+
+	customItems.value.forEach((_, index) => {
+		const element = imageWrapperRefs.value[index];
+		if (!element) return;
+
+		const trigger = ScrollTrigger.create({
+			trigger: element,
+			scroller: homePageRef.value,
+			horizontal: isDesktop.value,
+			start: isDesktop.value ? 'left 55%' : 'top center',
+			end: isDesktop.value ? `right 80%-=9rem` : 'bottom center',
+			markers: true,
+			onEnter: () => {
+				console.log('ScrollTrigger: Image', index);
+				setActiveItem(index);
+			},
+			onEnterBack: () => {
+				setActiveItem(index);
+			},
+		});
+
+		scrollTriggers.value.push(trigger);
+	});
 };
 
 onMounted(async () => {
@@ -154,18 +177,20 @@ onMounted(async () => {
 			lenisInstance.value.start();
 
 			await nextTick();
-			initScrollTriggers();
-			openAnimation();
+
+			setTimeout(() => {
+				createScrollTriggers();
+				isInitialized.value = true;
+			}, 1000);
 		}
 	} catch (err) {
-		console.error('Error initializing Lenis:', err);
 		errorHome.value = err;
 	}
 });
 
 onUnmounted(() => {
-	ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
-	tlArray.value.forEach((tl) => tl.kill());
+	scrollTriggers.value.forEach((trigger) => trigger.kill());
+	scrollTriggers.value = [];
 
 	if (lenisInstance.value) {
 		lenisInstance.value.destroy();
@@ -186,11 +211,9 @@ onUnmounted(() => {
 		justify-content: center;
 		align-items: center;
 		min-height: 100vh;
-		gap: 9rem;
 
 		@include tablet {
 			flex-direction: row;
-			gap: 9rem;
 			height: 100vh;
 			min-height: auto;
 			width: max-content;
@@ -201,6 +224,7 @@ onUnmounted(() => {
 			flex-direction: column;
 			align-items: center;
 			gap: 9rem;
+			margin-top: 9rem;
 
 			&.second {
 				margin-top: 9rem;
@@ -218,33 +242,61 @@ onUnmounted(() => {
 				min-height: auto;
 				width: max-content;
 				gap: 9rem;
+				margin-top: 0rem;
+				margin-left: 9rem;
 			}
 
 			.image-wrapper {
 				width: calc(100vw - 18rem);
 				flex-shrink: 0;
+				overflow: hidden;
+				cursor: pointer;
 
 				@include tablet {
-					width: calc(25vw - 9rem);
+					width: calc(100vw / 4 - 9rem);
+					height: auto;
+					aspect-ratio: 429 / 249;
 				}
 
-				.image-placeholder {
-					display: block;
+				.video-container {
+					position: relative;
 					width: 100%;
-					height: calc(25dvh - 32rem);
+					height: 100%;
 					overflow: hidden;
-					flex-shrink: 0;
+					background-color: $black;
 
-					@include tablet {
-						height: auto;
-						aspect-ratio: 429 / 249;
-					}
-
-					img {
+					.video-thumbnail {
+						position: absolute;
+						top: 0;
+						left: 0;
 						width: 100%;
 						height: 100%;
-						transition: transform 0.6s $out-cubic;
+						z-index: 2;
+						transition: opacity 0.7s linear;
+						opacity: 1;
+
+						&.hidden {
+							opacity: 0;
+							pointer-events: none;
+						}
+
+						img {
+							width: 100%;
+							height: 100%;
+							object-fit: cover;
+						}
+					}
+
+					.video-element {
+						width: 100%;
+						height: 100%;
 						object-fit: cover;
+						opacity: 0;
+						transition: opacity 0.7s linear;
+
+						&.visible {
+							opacity: 1;
+						}
 					}
 				}
 			}
