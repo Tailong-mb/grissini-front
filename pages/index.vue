@@ -42,12 +42,12 @@ const errorHome = ref(null);
 const classes = [
 	'absolute left display-none tb:col-start-1 tb:col-end-13',
 	'absolute left tb:col-start-1 tb:col-end-13',
-	'col-start-1 col-end-4 tb:col-start-1 tb:col-end-3',
-	'col-start-1 col-end-5 tb:col-start-3 tb:col-end-6',
-	'col-start-1 col-end-6 tb:col-start-6 tb:col-end-10 active',
-	'col-start-1 col-end-5 tb:col-start-10 tb:col-end-13',
-	'col-start-1 col-end-4 tb:col-start-1 tb:col-end-13 desktop-absolute right',
-	'absolute right display-none tb:col-start-1 tb:col-end-13',
+	'col-start-1 col-end-4 tb:col-start-1 tb:col-end-3 absolute-first-mobile',
+	'col-start-1 col-end-5 tb:col-start-3 tb:col-end-6 absolute-second-mobile',
+	'col-start-1 col-end-6 tb:col-start-6 tb:col-end-10 active absolute-third-mobile',
+	'col-start-1 col-end-5 tb:col-start-10 tb:col-end-13 absolute-fourth-mobile',
+	'col-start-1 col-end-4 tb:col-start-1 tb:col-end-13 desktop-absolute right absolute-fifth-mobile',
+	'absolute right display-none-desktop tb:col-start-1 tb:col-end-13',
 ];
 
 const itemRefs = ref([]);
@@ -209,15 +209,17 @@ onUnmounted(() => {
 	.container-wrapper {
 		position: relative;
 		width: 100vw;
+		height: 100dvh;
 
 		@include tablet {
 			height: 50vh;
 		}
 
 		.item {
-			position: relative;
+			position: absolute;
 			display: flex;
 			flex-direction: column;
+			width: 100%;
 
 			@include tablet {
 				position: absolute;
@@ -229,6 +231,12 @@ onUnmounted(() => {
 
 			&.display-none {
 				display: none;
+			}
+
+			&.display-none-desktop {
+				@include tablet {
+					display: none;
+				}
 			}
 
 			&.desktop-absolute {
@@ -250,6 +258,51 @@ onUnmounted(() => {
 				}
 			}
 
+			&.absolute-first-mobile {
+				@include mobile-only {
+					position: absolute;
+					top: 8rem;
+					left: 0;
+					height: calc(100dvh * 15 / 100 - 8rem);
+				}
+			}
+
+			&.absolute-second-mobile {
+				@include mobile-only {
+					position: absolute;
+					top: calc(100dvh * 15 / 100 + 8rem);
+					left: 0;
+					height: calc(100dvh * 20 / 100 - 8rem);
+				}
+			}
+
+			&.absolute-third-mobile {
+				@include mobile-only {
+					position: absolute;
+					top: calc(100dvh * 35 / 100 + 8rem);
+					left: 0;
+					height: calc(100dvh * 30 / 100 - 8rem);
+				}
+			}
+
+			&.absolute-fourth-mobile {
+				@include mobile-only {
+					position: absolute;
+					top: calc(100dvh * 65 / 100 + 8rem);
+					left: 0;
+					height: calc(100dvh * 20 / 100 - 8rem);
+				}
+			}
+
+			&.absolute-fifth-mobile {
+				@include mobile-only {
+					position: absolute;
+					top: calc(100dvh * 85 / 100 + 8rem);
+					left: 0;
+					height: calc(100dvh * 15 / 100 - 16rem);
+				}
+			}
+
 			&.absolute {
 				position: absolute;
 				top: 0;
@@ -260,6 +313,7 @@ onUnmounted(() => {
 				}
 
 				&.left {
+					top: -8rem;
 					transform: translate3d(0, -100%, 0);
 
 					@include tablet {
@@ -269,7 +323,7 @@ onUnmounted(() => {
 				}
 
 				&.right {
-					bottom: 0;
+					bottom: -8rem;
 					top: auto;
 					transform: translate3d(0, 100%, 0);
 
@@ -283,7 +337,11 @@ onUnmounted(() => {
 
 			.wrapper-item {
 				width: 100%;
-				margin-top: 8rem;
+				height: 100%;
+
+				@include mobile-only {
+					height: 100%;
+				}
 
 				@include tablet {
 					margin-top: 0;
@@ -292,7 +350,14 @@ onUnmounted(() => {
 				.video-container {
 					position: relative;
 					width: 100%;
-					aspect-ratio: 413 / 212;
+
+					@include mobile-only {
+						height: 100%;
+					}
+
+					@include tablet {
+						aspect-ratio: 413 / 212;
+					}
 
 					.video-thumbnail {
 						position: absolute;
