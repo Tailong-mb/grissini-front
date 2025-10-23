@@ -1,10 +1,10 @@
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
-import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin';
 import { CustomEase } from 'gsap/CustomEase';
+import { Flip } from 'gsap/Flip';
 
-gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, CustomEase);
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, CustomEase, Flip);
 gsap.config({ force3D: true });
 gsap.defaults({
 	ease: 'none',

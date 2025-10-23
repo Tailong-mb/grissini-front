@@ -28,13 +28,13 @@ const homeData = ref(null);
 const loadingHome = ref(false);
 const errorHome = ref(null);
 const classes = [
-	'absolute left',
+	'absolute left opacity-0',
 	'col-start-1 col-end-4 tb:col-start-1 tb:col-end-3',
 	'col-start-1 col-end-5 tb:col-start-3 tb:col-end-6',
 	'col-start-1 col-end-6 tb:col-start-6 tb:col-end-10',
 	'col-start-1 col-end-5 tb:col-start-10 tb:col-end-13',
-	'col-start-1 col-end-4 desktop-absolute right',
-	'absolute right',
+	'col-start-1 col-end-4 tb:col-start-1 tb:col-end-13 desktop-absolute right desktop-opacity-0',
+	'absolute right opacity-0',
 ];
 
 const itemRefs = ref([]);
@@ -91,6 +91,16 @@ onMounted(async () => {
 			position: relative;
 			display: flex;
 			flex-direction: column;
+
+			&.opacity-0 {
+				opacity: 0;
+			}
+
+			&.desktop-opacity-0 {
+				@include tablet {
+					opacity: 0;
+				}
+			}
 
 			&.desktop-absolute {
 				@include tablet {
@@ -151,7 +161,7 @@ onMounted(async () => {
 				.video-container {
 					position: relative;
 					width: 100%;
-					aspect-ratio: 413 / 217;
+					aspect-ratio: 413 / 212;
 
 					.video-thumbnail {
 						position: absolute;
