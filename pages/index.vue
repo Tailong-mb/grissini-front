@@ -1,15 +1,26 @@
 <template>
 	<div class="home-page">
 		<div class="container-wrapper container" ref="containerWrapperRef">
-			<div v-for="(item, index) in homeData?.items" :key="`${item._key}-${index}`" class="item" :class="classes[Math.min(index, classes.length - 1)]" ref="itemRefs">
+			<div v-for="(item, index) in homeData?.items" :key="`${item._key}-${index}`" class="item" :class="getItemClass(index)" ref="itemRefs">
 				<div class="wrapper-item" ref="wrapperItemRefs">
 					<div class="video-container">
-						<div class="video-thumbnail">
+						<div class="video-thumbnail" :class="{ 'fade-out': getItemClass(index).includes('active') }">
 							<img v-if="item.thumbnail?.url" :src="item.thumbnail.url" :alt="getLocalizedTitle(item.title)" />
 						</div>
-						<video v-if="item.video?.url" ref="videoRefs" class="video-element" :poster="item.thumbnail?.url" loop playsinline webkit-playsinline>
+						<video v-if="item.video?.url" ref="videoRefs" class="video-element" :poster="item.thumbnail?.url" loop playsinline webkit-playsinline :autoplay="getItemClass(index).includes('active')">
 							<source :src="item.video.url" type="video/mp4" />
 						</video>
+					</div>
+					<div class="mobile-hiden" :class="{ active: getItemClass(index).includes('active') }">
+						<div class="legend-container">
+							<div class="index">{{ String(index + 1).padStart(2, '0') }}/</div>
+							<div class="subtitle">{{ getLocalizedTitle(item.title) }}</div>
+						</div>
+						<h2 class="title">{{ getLocalizedTitle(item.title) }}</h2>
+						<p class="description">{{ getLocalizedTitle(item.description) }}</p>
+						<a :href="item.url" class="link" target="_blank" rel="noopener noreferrer">
+							{{ getLocalizedTitle(item.linkName) }}
+						</a>
 					</div>
 				</div>
 			</div>
@@ -18,9 +29,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import { useSanityHome } from '@/composables/useSanityHome';
 import { useI18n } from 'vue-i18n';
+import { Flip } from 'gsap/Flip';
 
 const { locale } = useI18n();
 
@@ -28,18 +40,24 @@ const homeData = ref(null);
 const loadingHome = ref(false);
 const errorHome = ref(null);
 const classes = [
-	'absolute left opacity-0',
+	'absolute left display-none tb:col-start-1 tb:col-end-13',
+	'absolute left tb:col-start-1 tb:col-end-13',
 	'col-start-1 col-end-4 tb:col-start-1 tb:col-end-3',
 	'col-start-1 col-end-5 tb:col-start-3 tb:col-end-6',
-	'col-start-1 col-end-6 tb:col-start-6 tb:col-end-10',
+	'col-start-1 col-end-6 tb:col-start-6 tb:col-end-10 active',
 	'col-start-1 col-end-5 tb:col-start-10 tb:col-end-13',
-	'col-start-1 col-end-4 tb:col-start-1 tb:col-end-13 desktop-absolute right desktop-opacity-0',
-	'absolute right opacity-0',
+	'col-start-1 col-end-4 tb:col-start-1 tb:col-end-13 desktop-absolute right',
+	'absolute right display-none tb:col-start-1 tb:col-end-13',
 ];
 
 const itemRefs = ref([]);
 const videoRefs = ref([]);
 const wrapperItemRefs = ref([]);
+const containerWrapperRef = ref(null);
+
+// État de navigation
+const currentIndex = ref(0);
+const isAnimating = ref(false);
 
 const getLocalizedTitle = (titleObject) => {
 	if (!titleObject) return '';
@@ -51,6 +69,97 @@ const getLocalizedTitle = (titleObject) => {
 	}
 
 	return '';
+};
+
+const getItemClass = (index) => {
+	if (!homeData.value?.items) return '';
+
+	const totalItems = homeData.value.items.length;
+	const relativeIndex = (index - currentIndex.value + totalItems) % totalItems;
+
+	return classes[Math.min(relativeIndex, classes.length - 1)];
+};
+
+// Fonction pour contrôler les vidéos
+const controlVideos = () => {
+	if (!homeData.value?.items) return;
+
+	videoRefs.value.forEach((video, index) => {
+		if (video) {
+			const totalItems = homeData.value.items.length;
+			const relativeIndex = (index - currentIndex.value + totalItems) % totalItems;
+			const currentClass = classes[Math.min(relativeIndex, classes.length - 1)];
+			const isActive = currentClass.includes('active');
+
+			if (isActive) {
+				// Vidéo active : la jouer
+				video.play().catch(console.error);
+			} else {
+				// Vidéo non-active : la mettre en pause et remettre le compteur à 0
+				video.pause();
+				video.currentTime = 0;
+			}
+		}
+	});
+};
+
+const animateWithFLIP = async (direction) => {
+	if (isAnimating.value || !homeData.value?.items) return;
+
+	isAnimating.value = true;
+	const totalItems = homeData.value.items.length;
+
+	const state = Flip.getState(wrapperItemRefs.value);
+
+	if (direction === 'next') {
+		currentIndex.value = (currentIndex.value + 1) % totalItems;
+	} else {
+		currentIndex.value = (currentIndex.value - 1 + totalItems) % totalItems;
+	}
+
+	await nextTick();
+
+	// Animer avec GSAP Flip
+	Flip.from(state, {
+		duration: 1,
+		ease: 'power3.inOut',
+		onComplete: () => {
+			isAnimating.value = false;
+		},
+	});
+
+	// Contrôler les vidéos après l'animation
+	await nextTick();
+	controlVideos();
+};
+
+// Gestion des événements clavier
+const handleKeydown = (event) => {
+	if (event.key === 'ArrowLeft') {
+		event.preventDefault();
+		animateWithFLIP('prev');
+	} else if (event.key === 'ArrowRight') {
+		event.preventDefault();
+		animateWithFLIP('next');
+	}
+};
+
+// Gestion du scroll
+let scrollTimeout;
+const handleWheel = (event) => {
+	event.preventDefault();
+
+	// Debounce pour éviter les animations multiples
+	clearTimeout(scrollTimeout);
+	scrollTimeout = setTimeout(() => {
+		if (event.deltaY > 0) {
+			// Scroll vers le bas = navigation vers la droite
+			animateWithFLIP('next');
+		} else if (event.deltaY < 0) {
+			// Scroll vers le haut = navigation vers la gauche
+			animateWithFLIP('prev');
+		}
+	}, 50);
 };
 
 const loadHomeData = async () => {
@@ -70,9 +179,21 @@ onMounted(async () => {
 	try {
 		await loadHomeData();
 		await nextTick();
+
+		controlVideos();
+
+		window.addEventListener('keydown', handleKeydown);
+		window.addEventListener('wheel', handleWheel, { passive: false });
 	} catch (err) {
 		errorHome.value = err;
 	}
+});
+
+onUnmounted(() => {
+	// Nettoyer les event listeners
+	window.removeEventListener('keydown', handleKeydown);
+	window.removeEventListener('wheel', handleWheel);
+	clearTimeout(scrollTimeout);
 });
 </script>
 
@@ -87,19 +208,27 @@ onMounted(async () => {
 
 	.container-wrapper {
 		position: relative;
+		width: 100vw;
+
+		@include tablet {
+			height: 50vh;
+		}
+
 		.item {
 			position: relative;
 			display: flex;
 			flex-direction: column;
 
-			&.opacity-0 {
-				opacity: 0;
+			@include tablet {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				transform: translate3d(0, 0, 0);
 			}
 
-			&.desktop-opacity-0 {
-				@include tablet {
-					opacity: 0;
-				}
+			&.display-none {
+				display: none;
 			}
 
 			&.desktop-absolute {
@@ -114,6 +243,7 @@ onMounted(async () => {
 					}
 
 					&.right {
+						left: auto;
 						right: -16rem;
 						transform: translate3d(100%, 0, 0);
 					}
@@ -144,6 +274,7 @@ onMounted(async () => {
 					transform: translate3d(0, 100%, 0);
 
 					@include tablet {
+						left: auto;
 						right: -16rem;
 						transform: translate3d(100%, 0, 0);
 					}
@@ -169,10 +300,15 @@ onMounted(async () => {
 						left: 0;
 						width: 100%;
 						height: 100%;
+						transition: opacity 0.6s linear;
+
+						&.fade-out {
+							opacity: 0;
+						}
 
 						img {
-							width: 100%;
-							height: 100%;
+							width: 101%;
+							height: 101%;
 							object-fit: cover;
 						}
 					}
@@ -181,6 +317,80 @@ onMounted(async () => {
 						width: 100%;
 						height: 100%;
 						object-fit: cover;
+					}
+				}
+			}
+
+			.mobile-hiden {
+				display: none;
+				opacity: 0;
+				transition: opacity 0.7s linear;
+
+				@include tablet {
+					display: block;
+				}
+
+				&.active {
+					opacity: 1;
+				}
+
+				.legend-container {
+					display: flex;
+					justify-content: space-between;
+					align-items: center;
+					margin-top: 6rem;
+
+					.index,
+					.subtitle {
+						@include switzer(600, normal);
+						font-size: 10rem;
+						text-transform: uppercase;
+						color: $black;
+					}
+				}
+
+				.title {
+					margin-top: 60rem;
+					@include switzer(600, normal);
+					font-size: 12rem;
+					text-transform: uppercase;
+					color: $black;
+				}
+
+				.description {
+					margin-top: 40rem;
+					@include switzer(500, normal);
+					font-size: 12rem;
+					color: $black;
+					max-width: 330rem;
+					opacity: 0.3;
+				}
+
+				.link {
+					display: block;
+					position: relative;
+					margin-top: 50rem;
+					width: fit-content;
+					@include switzer(600, normal);
+					font-size: 12rem;
+					color: $black;
+					padding-bottom: 2rem;
+
+					&::after {
+						content: '';
+						position: absolute;
+						bottom: 0;
+						left: 0;
+						width: 100%;
+						height: 1px;
+						background-color: $black;
+					}
+
+					&:hover {
+						&::after {
+							transform: scale3d(1, 1, 1);
+							transform-origin: left center;
+						}
 					}
 				}
 			}
