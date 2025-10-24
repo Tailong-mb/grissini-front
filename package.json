@@ -9,7 +9,7 @@
 		"postinstall": "nuxt prepare"
 	},
 	"devDependencies": {
-		"nuxt": "^4.1.1",
+		"nuxt": "3.19.2",
 		"prettier": "^3.6.2",
 		"sass": "^1.92.1",
 		"vite-plugin-eslint": "^1.8.1",
