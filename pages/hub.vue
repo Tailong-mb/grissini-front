@@ -1,5 +1,5 @@
 <template>
-	<div class="hub-page" ref="hubPageRef">
+	<div class="hub-page">
 		<div v-if="hubData && hubData.items && hubData.items.length > 0" class="view-scroll container" :class="{ 'view-scroll-active': viewMode === 'scroll' }">
 			<div class="video-scroll-container dk:col-start-6 dk:col-end-12">
 				<div
@@ -175,7 +175,6 @@ const openViewSelector = () => {
 onMounted(async () => {
 	await loadHubData();
 	await nextTick();
-	openAnimation();
 
 	isDesktop.value = window.matchMedia('(min-width: 1024px)').matches;
 
@@ -224,21 +223,6 @@ watch(
 	},
 	{ deep: true }
 );
-const openAnimation = () => {
-	const tl = gsap.timeline();
-
-	tl.fromTo(
-		hubPageRef.value,
-		{
-			opacity: 0,
-		},
-		{
-			opacity: 1,
-			duration: 1,
-			ease: 'linear',
-		}
-	);
-};
 </script>
 
 <style lang="scss" scoped>

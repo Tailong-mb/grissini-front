@@ -3,6 +3,7 @@
 	<Menu />
 	<Newsletter />
 	<Cart />
+	<Loader />
 	<NuxtPage :transition="pageTransition" />
 	<Navigation />
 	<NavigationBottom />
@@ -10,6 +11,7 @@
 
 <script setup>
 import Header from '@/components/Header.vue';
+import Loader from '@/components/Loader.vue';
 import Navigation from '@/components/Navigation.vue';
 import NavigationBottom from '@/components/NavigationBottom.vue';
 import Newsletter from '@/components/Newsletter.vue';
