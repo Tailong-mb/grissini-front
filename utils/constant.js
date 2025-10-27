@@ -6,3 +6,7 @@ export const CONSTANT = {
 	width: window.innerWidth,
 	height: window.innerHeight,
 };
+
+export const LOADER_PLAYED = {
+	PLAYED: 'false',
+};

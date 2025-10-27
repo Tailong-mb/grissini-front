@@ -15,6 +15,14 @@ import NavigationBottom from '@/components/NavigationBottom.vue';
 import Newsletter from '@/components/Newsletter.vue';
 import Cart from '@/components/Cart.vue';
 import pageTransition from '@/helpers/transitionConfig';
+
+const route = useRoute();
+
+onMounted(() => {
+	if (route.path !== '/') {
+		LOADER_PLAYED.PLAYED = 'true';
+	}
+});
 </script>
 
 <style lang="scss">

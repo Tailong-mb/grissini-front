@@ -121,11 +121,11 @@ const openViewSelector = () => {
 		transition: opacity 0.7s linear;
 		overflow: hidden;
 		height: 100dvh;
+		width: 100%;
 
 		&.view-watch-active {
 			opacity: 1;
 			pointer-events: all;
-			height: auto;
 		}
 	}
 

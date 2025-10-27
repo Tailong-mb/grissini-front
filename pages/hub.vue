@@ -1,5 +1,5 @@
 <template>
-	<div class="hub-page">
+	<div class="hub-page" ref="hubPageRef">
 		<div v-if="hubData && hubData.items && hubData.items.length > 0" class="view-scroll container" :class="{ 'view-scroll-active': viewMode === 'scroll' }">
 			<div class="video-scroll-container dk:col-start-6 dk:col-end-12">
 				<div
@@ -24,7 +24,7 @@
 				</div>
 			</div>
 			<div class="view-scroll-content col-start-2 col-end-5">
-				<div class="view-scroll-item" v-for="(item, index) in hubData.items" :key="item._key" :class="{ active: currentActiveItem === index }" @click="setActiveItem(index)">
+				<div class="view-scroll-item" v-for="(item, index) in hubData.items" :key="item._key" :class="{ active: currentActiveItem === index }" @click="setActiveItem(index)" ref="viewScrollItemRefs">
 					<div class="view-scroll-index">{{ String(index + 1).padStart(2, '0') }}/</div>
 					<div class="video-scroll-item-content">
 						<div class="video-scroll-item-content-title">
@@ -35,7 +35,7 @@
 						</div>
 					</div>
 				</div>
-				<a class="view-all" :href="hubData.watchAllLink" target="_blank" rel="noopener noreferrer">
+				<a class="view-all" :href="hubData.watchAllLink" target="_blank" rel="noopener noreferrer" ref="viewAllRef">
 					{{ getLocalizedText(hubData.watchAllText, locale) }}
 				</a>
 			</div>
@@ -75,7 +75,7 @@ const videoScrollRefs = ref([]);
 const scrollTriggers = ref([]);
 const isDesktop = ref(false);
 const isAutoCentering = ref(false);
-
+const hubPageRef = ref(null);
 const viewText = computed(() => getLocalizedText(hubData.value?.viewText, locale.value));
 
 const loadHubData = async () => {
@@ -83,28 +83,21 @@ const loadHubData = async () => {
 	error.value = null;
 	try {
 		hubData.value = await useSanityHub(locale.value);
-		console.log('=== HUB PAGE DATA ===');
-		console.log('Locale:', locale.value);
-		console.log('Hub Data:', hubData.value);
-		console.log('=====================');
 	} catch (err) {
 		error.value = err.message;
-		console.error('Hub page error:', err);
 	} finally {
 		loading.value = false;
 	}
 };
 
-// Center the current active item
 const centerActiveItem = (force = false) => {
 	if (!isDesktop.value || !videoScrollRefs.value[currentActiveItem.value] || isAutoCentering.value) return;
 
 	const targetElement = videoScrollRefs.value[currentActiveItem.value];
 	const targetPosition = targetElement.offsetTop - window.innerHeight / 2 + targetElement.offsetHeight / 2;
 	const currentScroll = window.scrollY;
-	const tolerance = 50; // pixels tolerance
+	const tolerance = 50;
 
-	// Check if already centered (unless forced)
 	if (!force && Math.abs(currentScroll - targetPosition) < tolerance) {
 		return;
 	}
@@ -127,14 +120,11 @@ const centerActiveItem = (force = false) => {
 	}
 };
 
-// Set active item manually (from click)
 const setActiveItem = (index) => {
-	console.log('Setting active item to:', index);
 	currentActiveItem.value = index;
 
-	// On desktop, scroll to center the video
 	if (isDesktop.value) {
-		centerActiveItem(true); // Force centering on click
+		centerActiveItem(true);
 	}
 };
 
@@ -153,11 +143,9 @@ const createScrollTriggers = () => {
 			start: 'top center',
 			end: 'bottom center',
 			onEnter: () => {
-				console.log('ScrollTrigger: Video', index, 'entered center');
 				currentActiveItem.value = index;
 			},
 			onEnterBack: () => {
-				console.log('ScrollTrigger: Video', index, 'entered center (back)');
 				currentActiveItem.value = index;
 			},
 		});
@@ -166,7 +154,6 @@ const createScrollTriggers = () => {
 	});
 };
 
-// Scroll handler for mobile (fallback)
 const handleScroll = (scrollInfo) => {
 	if (!hubData.value?.items || isDesktop.value) return;
 
@@ -176,12 +163,10 @@ const handleScroll = (scrollInfo) => {
 	const newActiveItem = Math.floor(scrollY / itemHeight);
 
 	if (newActiveItem >= 0 && newActiveItem < hubData.value.items.length && newActiveItem !== currentActiveItem.value) {
-		console.log('Mobile scroll changing active item to:', newActiveItem);
 		currentActiveItem.value = newActiveItem;
 	}
 };
 
-// Handlers
 const openViewSelector = () => {
 	$lenis.scrollTo(0, { duration: 0.3 });
 	viewMode.value = viewMode.value === 'scroll' ? 'watch' : 'scroll';
@@ -189,30 +174,20 @@ const openViewSelector = () => {
 
 onMounted(async () => {
 	await loadHubData();
+	await nextTick();
+	openAnimation();
 
-	// Detect desktop
 	isDesktop.value = window.matchMedia('(min-width: 1024px)').matches;
 
-	// Register ScrollTrigger plugin
-	gsap.registerPlugin(ScrollTrigger);
-
-	// Wait for DOM to be ready
-	await nextTick();
-
 	if (isDesktop.value) {
-		// Use ScrollTrigger for desktop
 		createScrollTriggers();
 
-		// Add Lenis scroll end listener for auto-centering
 		if ($lenis) {
 			let scrollTimeout;
 			$lenis.on('scroll', (scrollInfo) => {
-				// Clear previous timeout
 				clearTimeout(scrollTimeout);
 
-				// Check if scroll has ended (velocity is very low)
 				if (Math.abs(scrollInfo.velocity) < 0.1) {
-					// Small delay to ensure scroll has completely stopped
 					scrollTimeout = setTimeout(() => {
 						centerActiveItem();
 					}, 200);
@@ -220,7 +195,6 @@ onMounted(async () => {
 			});
 		}
 	} else {
-		// Use Lenis scroll event for mobile
 		if ($lenis) {
 			$lenis.on('scroll', handleScroll);
 		} else {
@@ -230,11 +204,9 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-	// Clean up ScrollTrigger
 	scrollTriggers.value.forEach((trigger) => trigger.kill());
 	scrollTriggers.value = [];
 
-	// Clean up scroll listeners
 	if ($lenis) {
 		$lenis.off('scroll', handleScroll);
 	} else {
@@ -242,7 +214,6 @@ onUnmounted(() => {
 	}
 });
 
-// Watch for data changes to recreate ScrollTriggers
 watch(
 	[hubData, isDesktop],
 	async () => {
@@ -253,6 +224,21 @@ watch(
 	},
 	{ deep: true }
 );
+const openAnimation = () => {
+	const tl = gsap.timeline();
+
+	tl.fromTo(
+		hubPageRef.value,
+		{
+			opacity: 0,
+		},
+		{
+			opacity: 1,
+			duration: 1,
+			ease: 'linear',
+		}
+	);
+};
 </script>
 
 <style lang="scss" scoped>

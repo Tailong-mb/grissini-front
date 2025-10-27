@@ -1,14 +1,16 @@
 <template>
 	<div id="page-composition" class="container">
 		<div class="left-part col-start-1 col-end-5 tb:col-start-3 tb:col-end-6">
-			<h1>GRISSINI</h1>
-			<p>{{ viewData?.description }}</p>
-			<a :href="`mailto:${viewData?.email}`">{{ viewData?.email }}</a>
+			<h1 ref="titleRef">GRISSINI</h1>
+			<p ref="descriptionRef">{{ viewData?.description }}</p>
+			<a ref="emailRef" :href="`mailto:${viewData?.email}`">{{ viewData?.email }}</a>
 		</div>
 		<div class="right-part col-start-1 col-end-5 tb:col-start-8 tb:col-end-11">
-			<PartitionSvg theme="light" />
+			<div class="svg-container" ref="partitionSvgRef">
+				<PartitionSvg theme="light" />
+			</div>
 			<div class="right-part__items">
-				<div class="right-part__item" v-for="item in viewData?.items" :key="item._key">
+				<div ref="itemsRef" class="right-part__item" v-for="item in viewData?.items" :key="item._key">
 					<h2>{{ item?.title }}</h2>
 					<p>{{ item?.description }}</p>
 				</div>
@@ -24,8 +26,15 @@ import { useI18n } from 'vue-i18n';
 import PartitionSvg from '@/components/svg/PartitionSvg.vue';
 import { getLocalizedText } from '@/utils/translate';
 
+import { gsap } from 'gsap';
+import { SplitText } from 'gsap/SplitText';
 const { locale } = useI18n();
 
+const titleRef = ref(null);
+const descriptionRef = ref(null);
+const emailRef = ref(null);
+const itemsRef = ref(null);
+const partitionSvgRef = ref(null);
 const compositionData = ref(null);
 const viewData = computed(() => {
 	if (!compositionData.value) return null;
@@ -49,10 +58,6 @@ const loadCompositionData = async () => {
 	error.value = null;
 	try {
 		compositionData.value = await useSanityComposition();
-		console.log('=== COMPOSITION PAGE DATA ===');
-		console.log('Locale:', locale.value);
-		console.log('Composition Data:', compositionData.value);
-		console.log('==============================');
 	} catch (err) {
 		error.value = err.message;
 		console.error('Composition page error:', err);
@@ -61,8 +66,72 @@ const loadCompositionData = async () => {
 	}
 };
 
+const openAnimation = () => {
+	const tl = gsap.timeline();
+
+	const descriptionSplit = SplitText.create(descriptionRef.value, {
+		type: 'words lines',
+		linesClass: 'inner-line',
+	});
+
+	tl.fromTo(
+		[titleRef.value, partitionSvgRef.value, emailRef.value],
+		{
+			opacity: 0,
+		},
+		{
+			opacity: 1,
+			duration: 0.8,
+			stagger: 0.2,
+			ease: 'linear',
+		}
+	);
+
+	tl.fromTo(
+		descriptionSplit.words,
+		{
+			y: 60,
+		},
+		{
+			y: 0,
+			duration: 0.9,
+			ease: 'power2.out',
+		},
+		0
+	);
+
+	tl.fromTo(
+		itemsRef.value,
+		{
+			yPercent: 100,
+		},
+		{
+			yPercent: 0,
+			duration: 1.2,
+			stagger: 0.2,
+			ease: 'power2.out',
+		},
+		0.2
+	);
+
+	tl.fromTo(
+		itemsRef.value,
+		{
+			opacity: 0,
+		},
+		{
+			opacity: 1,
+			duration: 0.6,
+			stagger: 0.2,
+			ease: 'linear',
+		},
+		0.8
+	);
+};
 onMounted(async () => {
 	await loadCompositionData();
+	await document.fonts.ready;
+	openAnimation();
 });
 </script>
 
