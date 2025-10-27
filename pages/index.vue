@@ -3,14 +3,14 @@
 		<div class="container-wrapper container" ref="containerWrapperRef">
 			<div v-for="(item, index) in homeData?.items" :key="`${item._key}-${index}`" class="item" :class="getItemClass(index)" ref="itemRefs">
 				<div class="wrapper-item" ref="wrapperItemRefs">
-					<div class="video-container">
+					<a :href="item.url" target="_blank" rel="noopener noreferrer" class="video-container">
 						<div class="video-thumbnail" :class="{ 'fade-out': getItemClass(index).includes('active') }">
 							<img v-if="item.thumbnail?.url" :src="item.thumbnail.url" :alt="getLocalizedTitle(item.title)" />
 						</div>
 						<video v-if="item.video?.url" ref="videoRefs" class="video-element" :poster="item.thumbnail?.url" loop playsinline webkit-playsinline :autoplay="getItemClass(index).includes('active')">
 							<source :src="item.video.url" type="video/mp4" />
 						</video>
-					</div>
+					</a>
 					<div class="mobile-hiden" :class="{ active: getItemClass(index).includes('active') }">
 						<div class="legend-container">
 							<div class="index">{{ String(index + 1).padStart(2, '0') }}/</div>
@@ -144,19 +144,15 @@ const handleKeydown = (event) => {
 	}
 };
 
-// Gestion du scroll
 let scrollTimeout;
 const handleWheel = (event) => {
 	event.preventDefault();
 
-	// Debounce pour éviter les animations multiples
 	clearTimeout(scrollTimeout);
 	scrollTimeout = setTimeout(() => {
 		if (event.deltaY > 0) {
-			// Scroll vers le bas = navigation vers la droite
 			animateWithFLIP('next');
 		} else if (event.deltaY < 0) {
-			// Scroll vers le haut = navigation vers la gauche
 			animateWithFLIP('prev');
 		}
 	}, 50);
@@ -190,7 +186,6 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-	// Nettoyer les event listeners
 	window.removeEventListener('keydown', handleKeydown);
 	window.removeEventListener('wheel', handleWheel);
 	clearTimeout(scrollTimeout);
@@ -348,6 +343,7 @@ onUnmounted(() => {
 				}
 
 				.video-container {
+					display: block;
 					position: relative;
 					width: 100%;
 
