@@ -7,12 +7,15 @@
 			</button>
 			<h2 :class="{ active: isOpen }">{{ data?.newsletterText }}</h2>
 			<p :class="{ active: isOpen }">{{ data?.descriptionNewsletter }}</p>
-			<form :class="{ active: isOpen, email: email.length > 0 }">
-				<input type="email" :placeholder="data?.emailLabel" v-model="email" />
-				<button type="submit">
+			<form :class="{ active: isOpen, email: email.length > 0 }" @submit.prevent="handleSubmit">
+				<input type="email" :placeholder="data?.emailLabel" v-model="email" :disabled="isSubmitting" required />
+				<button type="submit" :disabled="isSubmitting">
 					<ArrowRight />
 				</button>
 			</form>
+			<div v-if="submitMessage" class="newsletter-popin__right__message" :class="{ active: isOpen, success: isSuccess, error: !isSuccess }">
+				{{ submitMessage }}
+			</div>
 			<div class="newsletter-popin__social-links" :class="{ active: isOpen }">
 				<a v-for="link in data?.socialLinks" :key="link.url" :href="link.url" target="_blank">
 					{{ link.linkText }}
@@ -22,7 +25,7 @@
 	</div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import ArrowRight from '@/components/svg/ArrowRight.vue';
 import { getLocalizedText } from '@/utils/translate';
 
@@ -30,6 +33,9 @@ const { locale } = useI18n();
 const { isOpen, closeNewsletter } = useNewsletter();
 const rawData = ref(null);
 const email = ref('');
+const isSubmitting = ref(false);
+const submitMessage = ref('');
+const isSuccess = ref(false);
 
 const data = computed(() => {
 	if (!rawData.value) return null;
@@ -47,6 +53,50 @@ const data = computed(() => {
 		menuClose: getLocalizedText(rawData.value.menu?.menuClose, locale.value),
 	};
 });
+
+const handleSubmit = async () => {
+	if (!email.value || isSubmitting.value) return;
+
+	isSubmitting.value = true;
+	submitMessage.value = '';
+	isSuccess.value = false;
+
+	try {
+		const response = await $fetch('/api/newsletter', {
+			method: 'POST',
+			body: {
+				email: email.value,
+			},
+		});
+
+		isSuccess.value = true;
+		submitMessage.value = 'Successfully subscribed!';
+		email.value = '';
+
+		// Clear success message after 3 seconds
+		setTimeout(() => {
+			submitMessage.value = '';
+		}, 3000);
+	} catch (error: any) {
+		isSuccess.value = false;
+
+		// Handle different error types
+		if (error.statusCode === 409) {
+			submitMessage.value = 'This email is already subscribed.';
+		} else if (error.statusCode === 400) {
+			submitMessage.value = 'Please enter a valid email address.';
+		} else {
+			submitMessage.value = error.message || 'An error occurred. Please try again.';
+		}
+
+		// Clear error message after 5 seconds
+		setTimeout(() => {
+			submitMessage.value = '';
+		}, 5000);
+	} finally {
+		isSubmitting.value = false;
+	}
+};
 
 const loadNewsletterData = async () => {
 	try {
@@ -210,6 +260,11 @@ onMounted(async () => {
 				border: none;
 				background: none;
 
+				&:disabled {
+					opacity: 0.5;
+					cursor: not-allowed;
+				}
+
 				&:focus {
 					outline: none;
 				}
@@ -232,18 +287,45 @@ onMounted(async () => {
 				border: solid 1px $black;
 				transition: background-color 0.3s linear;
 
+				&:disabled {
+					opacity: 0.5;
+					cursor: not-allowed;
+				}
+
 				:deep(svg) {
 					color: $white;
 					transition: color 0.3s linear;
 				}
 
-				&:hover {
+				&:hover:not(:disabled) {
 					background-color: $white;
 
 					:deep(svg) {
 						color: $black;
 					}
 				}
+			}
+		}
+
+		&__message {
+			margin-top: 20rem;
+			@include switzer(500, normal);
+			font-size: 12rem;
+			text-transform: uppercase;
+			opacity: 0;
+			transition: opacity 0.3s linear;
+
+			&.active {
+				opacity: 1;
+			}
+
+			&.success {
+				color: $black;
+			}
+
+			&.error {
+				color: $black;
+				opacity: 0.7;
 			}
 		}
 
