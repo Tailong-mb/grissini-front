@@ -1,5 +1,8 @@
 <template>
-	<div id="page-composition" class="container">
+	<div v-if="!viewData">
+		<Loader />
+	</div>
+	<div v-else id="page-composition" class="container">
 		<div class="left-part col-start-1 col-end-5 tb:col-start-3 tb:col-end-6">
 			<h1 ref="titleRef">GRISSINI</h1>
 			<p ref="descriptionRef">{{ viewData?.description }}</p>
