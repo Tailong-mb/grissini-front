@@ -23,7 +23,7 @@
 					/>
 				</div>
 			</div>
-			<div class="view-scroll-content col-start-2 col-end-5">
+			<div class="view-scroll-content col-start-2 col-end-5" ref="viewScrollContentRef">
 				<div class="view-scroll-item" v-for="(item, index) in hubData.items" :key="item._key" :class="{ active: currentActiveItem === index }" @click="setActiveItem(index)" ref="viewScrollItemRefs">
 					<div class="view-scroll-index">{{ String(index + 1).padStart(2, '0') }}/</div>
 					<div class="video-scroll-item-content">
@@ -69,10 +69,13 @@ const hubData = ref(null);
 const loading = ref(false);
 const error = ref(null);
 const viewMode = ref('scroll');
+const viewScrollContentRef = ref(null);
 const currentActiveItem = ref(0);
 const { $lenis } = useNuxtApp();
 const videoScrollRefs = ref([]);
 const scrollTriggers = ref([]);
+const viewScrollItemRefs = ref([]);
+const viewAllRef = ref(null);
 const isDesktop = ref(false);
 const isAutoCentering = ref(false);
 const hubPageRef = ref(null);
@@ -172,10 +175,58 @@ const openViewSelector = () => {
 	viewMode.value = viewMode.value === 'scroll' ? 'watch' : 'scroll';
 };
 
+const openAnimation = () => {
+	const tl = gsap.timeline();
+
+	tl.fromTo(
+		viewScrollContentRef.value,
+		{
+			opacity: 0,
+		},
+		{
+			opacity: 1,
+			duration: 0.2,
+			ease: 'linear',
+		},
+		0.6
+	);
+
+	tl.fromTo(
+		viewScrollItemRefs.value,
+		{
+			opacity: 0,
+		},
+		{
+			opacity: 0.4,
+			duration: 0.6,
+			stagger: 0.2,
+			ease: 'linear',
+		},
+		0.8
+	);
+
+	tl.set(viewScrollItemRefs.value, {
+		clearProps: 'opacity',
+	});
+
+	tl.fromTo(
+		viewAllRef.value,
+		{
+			opacity: 0,
+		},
+		{
+			opacity: 1,
+			duration: 0.6,
+			ease: 'linear',
+		},
+		'-=0.4'
+	);
+};
+
 onMounted(async () => {
 	await loadHubData();
 	await nextTick();
-
+	openAnimation();
 	isDesktop.value = window.matchMedia('(min-width: 1024px)').matches;
 
 	if (isDesktop.value) {
@@ -289,6 +340,7 @@ watch(
 			justify-content: center;
 			height: 100dvh;
 			gap: 32px;
+			opacity: 0;
 
 			@include desktop {
 				position: fixed;
@@ -300,9 +352,9 @@ watch(
 			.view-scroll-item {
 				display: flex;
 				justify-content: space-between;
-				opacity: 0.4;
 				transition: opacity 0.3s linear;
 				cursor: pointer;
+				opacity: 0.4;
 
 				&:hover,
 				&.active {
