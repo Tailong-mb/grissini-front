@@ -187,6 +187,7 @@ onMounted(() => {
 			text-transform: uppercase;
 			color: $black;
 			margin-bottom: 40rem;
+			opacity: 0;
 		}
 
 		.description {
@@ -195,7 +196,7 @@ onMounted(() => {
 			text-transform: uppercase;
 			color: $black;
 			margin-bottom: 60rem;
-			opacity: 0.5;
+			opacity: 0;
 		}
 
 		.link-container {
@@ -212,6 +213,7 @@ onMounted(() => {
 					opacity 0.3s linear,
 					color 0.3s linear;
 				height: fit-content;
+				opacity: 0;
 
 				&:hover {
 					span {

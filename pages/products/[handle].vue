@@ -181,11 +181,9 @@ const openAnimation = () => {
 		0
 	);
 
-	tl.fromTo(
+	tl.to(
 		[titleRef.value, ...variantRefs.value, priceRef.value, buttonRef.value],
-		{
-			opacity: 0,
-		},
+
 		{
 			opacity: 1,
 			duration: 0.6,
@@ -195,11 +193,8 @@ const openAnimation = () => {
 		0.6
 	);
 
-	tl.fromTo(
+	tl.to(
 		descriptionRef.value,
-		{
-			opacity: 0,
-		},
 		{
 			opacity: 0.5,
 			duration: 0.6,
@@ -259,6 +254,7 @@ onMounted(() => {});
 			font-size: 12rem;
 			color: $black;
 			text-transform: uppercase;
+			opacity: 0;
 		}
 
 		.description {
@@ -266,7 +262,7 @@ onMounted(() => {});
 			@include switzer(500, normal);
 			font-size: 12rem;
 			color: $black;
-			opacity: 0.5;
+			opacity: 0;
 		}
 
 		.variant-container {
@@ -275,6 +271,7 @@ onMounted(() => {});
 			flex-wrap: wrap;
 			margin-top: 39rem;
 			.variant-item {
+				opacity: 0;
 				display: flex;
 				align-items: center;
 				justify-content: center;
@@ -304,7 +301,7 @@ onMounted(() => {});
 			@include switzer(600, normal);
 			font-size: 12rem;
 			color: $black;
-
+			opacity: 0;
 			@include tablet {
 				margin-top: 60rem;
 				margin-bottom: 50rem;

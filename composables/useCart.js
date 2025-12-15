@@ -1,8 +1,6 @@
 import { getShopifyClient, cleanShopifyData } from '~/utils/shopify';
 const isOpen = ref(false);
-// Queries et mutations pour le panier
 const CART_QUERIES = {
-	// Créer un nouveau panier
 	CREATE_CART: `
     mutation CreateCart($input: CartInput!) {
       cartCreate(input: $input) {
@@ -74,7 +72,6 @@ const CART_QUERIES = {
     }
   `,
 
-	// Récupérer un panier existant
 	GET_CART: `
     query GetCart($cartId: ID!) {
       cart(id: $cartId) {
@@ -140,7 +137,6 @@ const CART_QUERIES = {
     }
   `,
 
-	// Ajouter un produit au panier
 	ADD_TO_CART: `
     mutation AddToCart($cartId: ID!, $lines: [CartLineInput!]!) {
       cartLinesAdd(cartId: $cartId, lines: $lines) {
@@ -212,7 +208,6 @@ const CART_QUERIES = {
     }
   `,
 
-	// Mettre à jour la quantité d'un produit
 	UPDATE_CART_LINE: `
     mutation UpdateCartLine($cartId: ID!, $lines: [CartLineUpdateInput!]!) {
       cartLinesUpdate(cartId: $cartId, lines: $lines) {
@@ -284,7 +279,6 @@ const CART_QUERIES = {
     }
   `,
 
-	// Supprimer un produit du panier
 	REMOVE_FROM_CART: `
     mutation RemoveFromCart($cartId: ID!, $lineIds: [ID!]!) {
       cartLinesRemove(cartId: $cartId, lineIds: $lineIds) {
@@ -362,7 +356,6 @@ export const useCart = () => {
 	const loading = ref(false);
 	const error = ref(null);
 
-	// Récupérer le panier depuis le localStorage
 	const getStoredCartId = () => {
 		if (process.client) {
 			return localStorage.getItem('shopify_cart_id');
@@ -370,14 +363,12 @@ export const useCart = () => {
 		return null;
 	};
 
-	// Sauvegarder l'ID du panier dans le localStorage
 	const storeCartId = (cartId) => {
 		if (process.client) {
 			localStorage.setItem('shopify_cart_id', cartId);
 		}
 	};
 
-	// Créer un nouveau panier
 	const createCart = async (lines = []) => {
 		loading.value = true;
 		error.value = null;
@@ -404,7 +395,6 @@ export const useCart = () => {
 		}
 	};
 
-	// Récupérer un panier existant
 	const getCart = async (cartId) => {
 		loading.value = true;
 		error.value = null;
@@ -426,7 +416,6 @@ export const useCart = () => {
 		}
 	};
 
-	// Ajouter un produit au panier
 	const addToCart = async (variantId, quantity = 1) => {
 		loading.value = true;
 		error.value = null;
@@ -434,13 +423,11 @@ export const useCart = () => {
 		try {
 			let currentCart = cart.value;
 
-			// Si pas de panier, en créer un nouveau
 			if (!currentCart) {
 				currentCart = await createCart([{ merchandiseId: variantId, quantity }]);
 				return currentCart;
 			}
 
-			// Ajouter au panier existant
 			const shopifyClient = getShopifyClient();
 			const variables = {
 				cartId: currentCart.id,
@@ -465,7 +452,6 @@ export const useCart = () => {
 		}
 	};
 
-	// Mettre à jour la quantité d'un produit
 	const updateCartLine = async (lineId, quantity) => {
 		loading.value = true;
 		error.value = null;
@@ -499,7 +485,6 @@ export const useCart = () => {
 		}
 	};
 
-	// Supprimer un produit du panier
 	const removeFromCart = async (lineId) => {
 		loading.value = true;
 		error.value = null;
@@ -533,20 +518,18 @@ export const useCart = () => {
 		}
 	};
 
-	// Vider le panier
 	const clearCart = async () => {
 		if (!cart.value) return;
 
 		const lineIds = cart.value.lines.edges.map((edge) => edge.node.id);
 		if (lineIds.length > 0) {
-			await removeFromCart(lineIds[0]); // Supprimer le premier, puis récursivement les autres
+			await removeFromCart(lineIds[0]);
 			if (lineIds.length > 1) {
 				await clearCart();
 			}
 		}
 	};
 
-	// Initialiser le panier au chargement de la page
 	const initializeCart = async () => {
 		const storedCartId = getStoredCartId();
 		if (storedCartId) {
