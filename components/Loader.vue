@@ -10,6 +10,7 @@
 import LogoSvg from '@/components/svg/LogoSvg.vue';
 import PartitionSvg from '@/components/svg/PartitionSvg.vue';
 import { gsap } from 'gsap';
+import { LOADER_PLAYED } from '@/utils/constant';
 
 const logoRef = ref(null);
 const loaderRef = ref(null);
@@ -20,6 +21,7 @@ onMounted(() => {
 
 const openAnimation = () => {
 	const tl = gsap.timeline();
+
 	tl.fromTo(
 		logoRef.value,
 		{
@@ -37,6 +39,10 @@ const openAnimation = () => {
 		clipPath: 'inset(0 0 100% 0)',
 		duration: 1,
 		ease: 'immg.zoomIn',
+	});
+
+	tl.add(() => {
+		LOADER_PLAYED.PLAYED = 'true';
 	});
 };
 </script>

@@ -31,6 +31,7 @@ import { getLocalizedText } from '@/utils/translate';
 
 import { gsap } from 'gsap';
 import { SplitText } from 'gsap/SplitText';
+import { LOADER_PLAYED } from '@/utils/constant';
 const { locale } = useI18n();
 
 const titleRef = ref(null);
@@ -69,8 +70,8 @@ const loadCompositionData = async () => {
 	}
 };
 
-const openAnimation = () => {
-	const tl = gsap.timeline();
+const openAnimation = (delay = 0) => {
+	const tl = gsap.timeline({ delay: delay });
 
 	const descriptionSplit = SplitText.create(descriptionRef.value, {
 		type: 'words lines',
@@ -134,7 +135,11 @@ const openAnimation = () => {
 onMounted(async () => {
 	await loadCompositionData();
 	await document.fonts.ready;
-	openAnimation();
+	if (LOADER_PLAYED.PLAYED === 'false') {
+		openAnimation(3.2);
+	} else {
+		openAnimation(0);
+	}
 });
 </script>
 

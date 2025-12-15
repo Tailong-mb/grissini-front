@@ -62,6 +62,7 @@ import Video from '@/components/Video.vue';
 import { getLocalizedText } from '@/utils/translate';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { LOADER_PLAYED } from '@/utils/constant';
 
 const { locale } = useI18n();
 
@@ -175,8 +176,8 @@ const openViewSelector = () => {
 	viewMode.value = viewMode.value === 'scroll' ? 'watch' : 'scroll';
 };
 
-const openAnimation = () => {
-	const tl = gsap.timeline();
+const openAnimation = (delay = 0) => {
+	const tl = gsap.timeline({ delay: delay });
 
 	tl.fromTo(
 		viewScrollContentRef.value,
@@ -226,7 +227,11 @@ const openAnimation = () => {
 onMounted(async () => {
 	await loadHubData();
 	await nextTick();
-	openAnimation();
+	if (LOADER_PLAYED.PLAYED === 'false') {
+		openAnimation(3.2);
+	} else {
+		openAnimation(0);
+	}
 	isDesktop.value = window.matchMedia('(min-width: 1024px)').matches;
 
 	if (isDesktop.value) {

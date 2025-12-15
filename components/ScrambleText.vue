@@ -18,6 +18,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { gsap } from 'gsap';
+import { LOADER_PLAYED } from '@/utils/constant';
 
 const props = defineProps({
 	title: {
@@ -54,9 +55,9 @@ const numberRef = ref(null);
 const subtextRef = ref(null);
 let tl = null;
 
-const openAnimation = () => {
+const openAnimation = (delay = 0) => {
 	tl?.kill();
-	tl = gsap.timeline();
+	tl = gsap.timeline({ delay: delay });
 
 	tl.to([titleRef.value, numberRef.value], {
 		opacity: 1,
@@ -93,7 +94,11 @@ const closeAnimation = () => {
 };
 
 onMounted(() => {
-	openAnimation();
+	if (LOADER_PLAYED.PLAYED === 'false') {
+		openAnimation(3.2);
+	} else {
+		openAnimation(0);
+	}
 });
 
 defineExpose({

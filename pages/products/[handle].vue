@@ -31,6 +31,7 @@ import { useSanityProductWithTranslations } from '@/composables/useSanityProduct
 import { useI18n } from 'vue-i18n';
 import { getLocalizedText } from '@/utils/translate';
 import { gsap } from 'gsap';
+import { LOADER_PLAYED } from '@/utils/constant';
 
 const route = useRoute();
 const { locale } = useI18n();
@@ -161,11 +162,16 @@ const handleAddToCart = async () => {
 onMounted(async () => {
 	await loadProduct();
 	await document.fonts.ready;
-	openAnimation();
+	if (LOADER_PLAYED.PLAYED === 'false') {
+		openAnimation(3.2);
+	} else {
+		openAnimation(0);
+	}
 });
 
-const openAnimation = () => {
-	const tl = gsap.timeline();
+const openAnimation = (delay = 0) => {
+	console.log('DEBUG ICI 2', delay);
+	const tl = gsap.timeline({ delay: delay });
 
 	tl.fromTo(
 		titleRef.value,
