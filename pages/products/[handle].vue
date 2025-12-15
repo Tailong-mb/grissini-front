@@ -1,21 +1,21 @@
 <template>
-	<div class="container product-detail-page">
+	<div v-if="localizedProduct" class="container product-detail-page">
 		<div class="image-mobile-container col-start-1 col-end-6">
 			<img v-for="image in localizedProduct?.images" :key="image._id" :src="image.asset.url" :alt="localizedProduct.translations?.title || localizedProduct.title" />
 		</div>
 		<div class="content-container col-start-2 col-end-6">
-			<h1>{{ localizedProduct?.translations?.title || localizedProduct?.title }}</h1>
-			<p class="description">{{ localizedProduct?.translations?.description || '' }}</p>
+			<h1 ref="titleRef">{{ localizedProduct?.translations?.title || localizedProduct?.title }}</h1>
+			<p class="description" ref="descriptionRef">{{ localizedProduct?.translations?.description || '' }}</p>
 			<div v-if="availableVariants?.length > 1" class="variant-container">
-				<div class="variant-item" v-for="variant in availableVariants" :key="variant._id" :class="{ active: selectedVariant?.title === variant.title }" @click="selectedVariant = variant">
+				<div ref="variantRefs" class="variant-item" v-for="variant in availableVariants" :key="variant._id" :class="{ active: selectedVariant?.title === variant.title }" @click="selectedVariant = variant">
 					<p>{{ variant.title }}</p>
 				</div>
 			</div>
-			<p class="price">{{ formatPrice(localizedProduct?.priceRange?.minVariantPrice) }}</p>
+			<p ref="priceRef" class="price">{{ formatPrice(localizedProduct?.priceRange?.minVariantPrice) }}</p>
 			<div v-if="error" class="error-message">
 				{{ error }}
 			</div>
-			<button @click="handleAddToCart" :disabled="!selectedVariant || cartLoading" class="button-container">
+			<button ref="buttonRef" @click="handleAddToCart" :disabled="!selectedVariant || cartLoading" class="button-container">
 				{{ cartLoading ? 'Adding...' : localizedProduct?.translations?.addToCartText || 'Add to Cart' }}
 			</button>
 		</div>
@@ -30,16 +30,21 @@ import { ref, computed, onMounted, nextTick } from 'vue';
 import { useSanityProductWithTranslations } from '@/composables/useSanityProductsWithTranslations';
 import { useI18n } from 'vue-i18n';
 import { getLocalizedText } from '@/utils/translate';
+import { gsap } from 'gsap';
 
 const route = useRoute();
 const { locale } = useI18n();
 const { addToCart, loading: cartLoading, cart: cartData, openCart } = useCart();
 
-// Formater le prix
+const titleRef = ref(null);
+const descriptionRef = ref(null);
+const variantRefs = ref([]);
+const priceRef = ref(null);
+const buttonRef = ref(null);
+
 const formatPrice = (priceData) => {
 	if (!priceData) return 'Prix non disponible';
 
-	// Si c'est déjà un objet avec amount et currencyCode
 	if (typeof priceData === 'object' && priceData.amount && priceData.currencyCode) {
 		const amount = parseFloat(priceData.amount);
 		return new Intl.NumberFormat('fr-FR', {
@@ -48,7 +53,6 @@ const formatPrice = (priceData) => {
 		}).format(amount);
 	}
 
-	// Si c'est juste un string/number
 	if (typeof priceData === 'string' || typeof priceData === 'number') {
 		const amount = parseFloat(priceData);
 		return new Intl.NumberFormat('fr-FR', {
@@ -66,7 +70,6 @@ const quantity = ref(1);
 const loading = ref(false);
 const error = ref(null);
 
-// Computed pour les données localisées
 const localizedProduct = computed(() => {
 	if (!product.value) return null;
 
@@ -82,7 +85,6 @@ const localizedProduct = computed(() => {
 	};
 });
 
-// Computed property to filter available variants
 const availableVariants = computed(() => {
 	if (!product.value?.variants) return [];
 
@@ -113,8 +115,6 @@ const loadProduct = async () => {
 
 		product.value = productData;
 
-		// Sélectionner la première variante disponible par défaut
-		// Wait for the computed property to update
 		await nextTick();
 
 		if (availableVariants.value.length > 0) {
@@ -136,7 +136,6 @@ const handleAddToCart = async () => {
 		return;
 	}
 
-	// Debug: Log variant data
 	console.log('Selected variant:', selectedVariant.value);
 	console.log('Shopify ID:', selectedVariant.value.shopifyId);
 
@@ -148,7 +147,6 @@ const handleAddToCart = async () => {
 
 	try {
 		await addToCart(selectedVariant.value.shopifyId, quantity.value);
-		// Open cart after successful addition
 		openCart();
 	} catch (err) {
 		console.error('Error adding to cart:', err);
@@ -162,7 +160,56 @@ const handleAddToCart = async () => {
 
 onMounted(async () => {
 	await loadProduct();
+	await document.fonts.ready;
+	openAnimation();
 });
+
+const openAnimation = () => {
+	const tl = gsap.timeline();
+
+	tl.fromTo(
+		titleRef.value,
+		{
+			yPercent: 100,
+		},
+		{
+			yPercent: 0,
+			duration: 1.2,
+			stagger: 0.2,
+			ease: 'power2.out',
+		},
+		0
+	);
+
+	tl.fromTo(
+		[titleRef.value, ...variantRefs.value, priceRef.value, buttonRef.value],
+		{
+			opacity: 0,
+		},
+		{
+			opacity: 1,
+			duration: 0.6,
+			stagger: 0.2,
+			ease: 'linear',
+		},
+		0.6
+	);
+
+	tl.fromTo(
+		descriptionRef.value,
+		{
+			opacity: 0,
+		},
+		{
+			opacity: 0.5,
+			duration: 0.6,
+			ease: 'linear',
+		},
+		0.7
+	);
+};
+
+onMounted(() => {});
 </script>
 
 <style scoped lang="scss">
@@ -276,6 +323,7 @@ onMounted(async () => {
 
 		.button-container {
 			margin-top: 39rem;
+			opacity: 0;
 			@include switzer(500, normal);
 			font-size: 8rem;
 			color: $black;

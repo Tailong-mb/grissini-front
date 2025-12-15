@@ -59,7 +59,7 @@ const openAnimation = () => {
 		{
 			scale: 1,
 			duration: 1.2,
-			ease: 'immg.zoomIn',
+			ease: 'immg.zoomOut',
 		},
 		0.2
 	);
