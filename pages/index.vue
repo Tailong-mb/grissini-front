@@ -123,6 +123,7 @@ const animateWithFLIP = async (direction) => {
 	Flip.from(state, {
 		duration: 1,
 		ease: 'power3.inOut',
+		absolute: true,
 		onComplete: () => {
 			isAnimating.value = false;
 		},
