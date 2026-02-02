@@ -32,7 +32,9 @@
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import { useSanityHome } from '@/composables/useSanityHome';
 import { useI18n } from 'vue-i18n';
+import { gsap } from 'gsap';
 import { Flip } from 'gsap/Flip';
+import { LOADER_PLAYED } from '@/utils/constant';
 
 const { locale } = useI18n();
 
@@ -176,6 +178,11 @@ onMounted(async () => {
 	try {
 		await loadHomeData();
 		await nextTick();
+		if (LOADER_PLAYED.PLAYED === 'false') {
+			openAnimation(3.2);
+		} else {
+			openAnimation(0);
+		}
 
 		controlVideos();
 
@@ -191,6 +198,17 @@ onUnmounted(() => {
 	window.removeEventListener('wheel', handleWheel);
 	clearTimeout(scrollTimeout);
 });
+
+const openAnimation = (delay = 0) => {
+	const tl = gsap.timeline({ delay: delay });
+
+	tl.to(itemRefs.value, {
+		opacity: 1,
+		duration: 1.2,
+		stagger: 0.15,
+		ease: 'linear',
+	});
+};
 </script>
 
 <style scoped lang="scss">
@@ -216,6 +234,7 @@ onUnmounted(() => {
 			display: flex;
 			flex-direction: column;
 			width: 100%;
+			opacity: 0;
 
 			@include tablet {
 				position: absolute;
