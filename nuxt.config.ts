@@ -63,6 +63,8 @@ export default defineNuxtConfig({
 			SHOPIFY_STORE_DOMAIN: process.env.SHOPIFY_STORE_DOMAIN,
 			SHOPIFY_STOREFRONT_ACCESS_TOKEN: process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN,
 			SHOPIFY_STOREFRONT_API_VERSION: process.env.SHOPIFY_STOREFRONT_API_VERSION,
+			/** Google Tag Manager container ID (e.g. GTM-XXXXXX). Used with Cookie Information for consent-aware tracking. */
+			GTM_ID: process.env.NUXT_PUBLIC_GTM_ID || '',
 		},
 	},
 
@@ -71,6 +73,7 @@ export default defineNuxtConfig({
 	},
 
 	plugins: [
+		{ src: '~/plugins/gtm-consent.client.js', mode: 'client', ssr: false },
 		{ src: '~/plugins/gsap.js', mode: 'client', ssr: false },
 		{ src: '~/plugins/lenis.js', mode: 'client', ssr: false },
 		{ src: '~/plugins/cart-init.client.js', mode: 'client', ssr: false },

@@ -123,15 +123,14 @@ const animateWithFLIP = async (direction) => {
 
 	// Animer avec GSAP Flip
 	Flip.from(state, {
-		duration: 1,
-		ease: 'power3.inOut',
+		duration: 0.6,
+		ease: 'power1.inOut',
 		absolute: true,
 		onComplete: () => {
 			isAnimating.value = false;
 		},
 	});
 
-	// Contrôler les vidéos après l'animation
 	await nextTick();
 	controlVideos();
 };

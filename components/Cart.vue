@@ -56,7 +56,9 @@
 
 <script setup>
 const { locale } = useI18n();
-const { isOpen, closeCart, cart: cartData, updateCartLine, removeFromCart, checkout, initializeCart } = useCart();
+const { isOpen, closeCart, cart: cartData, updateCartLine, removeFromCart, initializeCart } = useCart();
+const { appendConsentToCheckoutUrl } = useConsent();
+const { trackBeginCheckout } = useTracking();
 const rawData = ref(null);
 
 // NOTE: données réelles du panier via useCart()
@@ -107,9 +109,26 @@ const removeItem = async (lineId) => {
 	}
 };
 
-// Aller au checkout
+// Aller au checkout : tracking begin_checkout + propagation consentement vers Shopify
 const goToCheckout = () => {
-	checkout();
+	if (!cartData.value?.checkoutUrl) return;
+	const cart = cartData.value;
+	const totalAmount = parseFloat(cart.cost?.totalAmount?.amount) || 0;
+	const currency = cart.cost?.totalAmount?.currencyCode || 'EUR';
+	const items = (cart.lines?.edges || []).map((edge) => {
+		const node = edge.node;
+		const qty = node.quantity || 1;
+		const subtotal = parseFloat(node.cost?.subtotalAmount?.amount) || 0;
+		return {
+			id: node.merchandise?.id,
+			name: node.merchandise?.product?.title,
+			price: subtotal / qty,
+			quantity: qty,
+		};
+	});
+	trackBeginCheckout({ value: totalAmount, currency, items });
+	const urlWithConsent = appendConsentToCheckoutUrl(cart.checkoutUrl);
+	window.location.href = urlWithConsent;
 };
 
 const loadCartData = async () => {

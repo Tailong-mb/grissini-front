@@ -36,6 +36,7 @@ import { LOADER_PLAYED } from '@/utils/constant';
 const route = useRoute();
 const { locale } = useI18n();
 const { addToCart, loading: cartLoading, cart: cartData, openCart } = useCart();
+const { trackViewItem, trackAddToCart } = useTracking();
 
 const titleRef = ref(null);
 const descriptionRef = ref(null);
@@ -123,6 +124,20 @@ const loadProduct = async () => {
 		} else {
 			error.value = 'This product is currently unavailable';
 		}
+		// Tracking: vue produit (pour GTM / GA4)
+		await nextTick();
+		const p = product.value;
+		const v = selectedVariant.value;
+		if (p && (v || p.priceRange?.minVariantPrice)) {
+			const price = v?.price?.amount != null ? parseFloat(v.price.amount) : parseFloat(p.priceRange?.minVariantPrice?.amount || 0);
+			const currency = (v?.price?.currencyCode || p.priceRange?.minVariantPrice?.currencyCode || 'EUR');
+			trackViewItem({
+				itemId: v?.shopifyId || p._id,
+				itemName: getLocalizedText(p.translations?.title, locale.value) || p.title,
+				price,
+				currency,
+			});
+		}
 	} catch (err) {
 		error.value = err.message;
 		console.error('Product detail page error:', err);
@@ -148,6 +163,17 @@ const handleAddToCart = async () => {
 
 	try {
 		await addToCart(selectedVariant.value.shopifyId, quantity.value);
+		const p = localizedProduct.value;
+		const v = selectedVariant.value;
+		const price = parseFloat(v?.price?.amount || p?.priceRange?.minVariantPrice?.amount || 0);
+		const currency = v?.price?.currencyCode || p?.priceRange?.minVariantPrice?.currencyCode || 'EUR';
+		trackAddToCart({
+			itemId: v.shopifyId,
+			itemName: (p?.translations?.title ?? p?.title) || '',
+			price,
+			quantity: quantity.value,
+			currency,
+		});
 		openCart();
 	} catch (err) {
 		console.error('Error adding to cart:', err);
