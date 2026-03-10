@@ -12,11 +12,14 @@
 				</div>
 			</div>
 			<p ref="priceRef" class="price">{{ formatPrice(localizedProduct?.priceRange?.minVariantPrice) }}</p>
+			<div v-if="isPreorder" class="preorder-message" ref="preorderRef">
+				{{ preorderDisplayMessage }}
+			</div>
 			<div v-if="error" class="error-message">
 				{{ error }}
 			</div>
 			<button ref="buttonRef" @click="handleAddToCart" :disabled="!selectedVariant || cartLoading" class="button-container">
-				{{ cartLoading ? 'Adding...' : localizedProduct?.translations?.addToCartText || 'Add to Cart' }}
+				{{ cartLoading ? 'Adding...' : isPreorder ? preorderButtonText : localizedProduct?.translations?.addToCartText || 'Add to Cart' }}
 			</button>
 		</div>
 		<div class="image-desktop-container tb:col-start-7 tb:col-end-11">
@@ -43,6 +46,7 @@ const descriptionRef = ref(null);
 const variantRefs = ref([]);
 const priceRef = ref(null);
 const buttonRef = ref(null);
+const preorderRef = ref(null);
 
 const formatPrice = (priceData) => {
 	if (!priceData) return 'Prix non disponible';
@@ -66,6 +70,22 @@ const formatPrice = (priceData) => {
 	return 'Prix non disponible';
 };
 
+const formatDate = (dateStr) => {
+	if (!dateStr) return '';
+	try {
+		const date = new Date(dateStr);
+		const localeMap = { fr: 'fr-FR', en: 'en-US', zh: 'zh-CN', no: 'nb-NO', sv: 'sv-SE', ja: 'ja-JP', es: 'es-ES' };
+		const intlLocale = localeMap[locale.value] || locale.value || 'fr-FR';
+		return new Intl.DateTimeFormat(intlLocale, {
+			day: 'numeric',
+			month: 'long',
+			year: 'numeric',
+		}).format(date);
+	} catch {
+		return dateStr;
+	}
+};
+
 const product = ref(null);
 const selectedVariant = ref(null);
 const quantity = ref(1);
@@ -83,9 +103,25 @@ const localizedProduct = computed(() => {
 			shortDescription: getLocalizedText(product.value.translations?.shortDescription, locale.value),
 			addToCartText: getLocalizedText(product.value.translations?.addToCartText, locale.value),
 			discoverProductText: getLocalizedText(product.value.translations?.discoverProductText, locale.value),
+			preorderMessage: getLocalizedText(product.value.translations?.preorderMessage, locale.value),
+			preorderButtonText: getLocalizedText(product.value.translations?.preorderButtonText, locale.value),
 		},
 	};
 });
+
+const isPreorder = computed(() => !!product.value?.preorder);
+
+const preorderDisplayMessage = computed(() => {
+	if (!isPreorder.value || !localizedProduct.value) return '';
+	const msg = localizedProduct.value.translations?.preorderMessage || localizedProduct.value.preorderMessage || 'Produit en précommande – expédition estimée';
+	// const date = localizedProduct.value.preorderShippingDate;
+	// if (date) {
+	// 	return `${msg}; ${formatDate(date)}`;
+	// }
+	return msg;
+});
+
+const preorderButtonText = computed(() => localizedProduct.value?.translations?.preorderButtonText || 'Pre-order');
 
 const availableVariants = computed(() => {
 	if (!product.value?.variants) return [];
@@ -130,7 +166,7 @@ const loadProduct = async () => {
 		const v = selectedVariant.value;
 		if (p && (v || p.priceRange?.minVariantPrice)) {
 			const price = v?.price?.amount != null ? parseFloat(v.price.amount) : parseFloat(p.priceRange?.minVariantPrice?.amount || 0);
-			const currency = (v?.price?.currencyCode || p.priceRange?.minVariantPrice?.currencyCode || 'EUR');
+			const currency = v?.price?.currencyCode || p.priceRange?.minVariantPrice?.currencyCode || 'EUR';
 			trackViewItem({
 				itemId: v?.shopifyId || p._id,
 				itemName: getLocalizedText(p.translations?.title, locale.value) || p.title,
@@ -213,9 +249,12 @@ const openAnimation = (delay = 0) => {
 		0
 	);
 
-	tl.to(
-		[titleRef.value, ...variantRefs.value, priceRef.value, buttonRef.value],
+	const animateElements = [titleRef.value, ...variantRefs.value, priceRef.value];
+	if (preorderRef.value) animateElements.push(preorderRef.value);
+	animateElements.push(buttonRef.value);
 
+	tl.to(
+		animateElements,
 		{
 			opacity: 1,
 			duration: 0.6,
@@ -325,6 +364,15 @@ onMounted(() => {});
 					color: $white;
 				}
 			}
+		}
+
+		.preorder-message {
+			margin-top: 20rem;
+			margin-bottom: 16rem;
+			@include switzer(500, normal);
+			font-size: 10rem;
+			color: $black;
+			opacity: 0;
 		}
 
 		.price {

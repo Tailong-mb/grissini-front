@@ -29,8 +29,13 @@ export const useSanityProductsWithTranslations = async (category = 'all', page =
       "description": description,
       "shortDescription": shortDescription,
       "addToCartText": addToCartText,
-      "discoverProductText": discoverProductText
+      "discoverProductText": discoverProductText,
+      "preorderMessage": preorderMessage,
+      "preorderButtonText": preorderButtonText
     },
+    preorder,
+    preorderMessage,
+    preorderShippingDate,
     "images": images[]{
       asset->{
         _id,
@@ -70,8 +75,13 @@ export const useSanityProductWithTranslations = async (slug) => {
       "description": description,
       "shortDescription": shortDescription,
       "addToCartText": addToCartText,
-      "discoverProductText": discoverProductText
+      "discoverProductText": discoverProductText,
+      "preorderMessage": preorderMessage,
+      "preorderButtonText": preorderButtonText
     },
+    preorder,
+    preorderMessage,
+    preorderShippingDate,
     "images": images[]{
       asset->{
         _id,

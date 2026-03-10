@@ -209,7 +209,6 @@ const openAnimation = (delay = 0) => {
 	});
 };
 </script>
-
 <style scoped lang="scss">
 .home-page {
 	display: flex;
