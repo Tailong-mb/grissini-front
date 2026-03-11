@@ -35,8 +35,10 @@ export default defineNuxtRouteMiddleware((to) => {
 
 	const isProductsRoot = path === '/products';
 	const isProductChild = path.startsWith('/products/');
+	const isCgv = path === '/cgv';
+	const isMentionsLegales = path === '/mentions-legales';
 
-	if (!isProductsRoot && !isProductChild) {
+	if (!isProductsRoot && !isProductChild && !isCgv && !isMentionsLegales) {
 		// Rediriger vers /[locale]/products si une locale est présente,
 		// sinon vers /products
 		const target = localePrefix ? `${localePrefix}/products` : '/products';
