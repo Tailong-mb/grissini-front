@@ -13,9 +13,11 @@
 			<div class="content-container">
 				<h2>{{ product.translations?.title || product.title }}</h2>
 				<p>{{ formatPrice(product.priceRange?.minVariantPrice) }}</p>
-				<NuxtLink :to="`/products/${product.slug}`" class="discover-link">
-					{{ product.translations?.discoverProductText || 'Découvrir' }}
-				</NuxtLink>
+				<div>
+					<NuxtLink :to="`/products/${product.slug}`" class="discover-link">
+						{{ product.translations?.discoverProductText || 'Découvrir' }}
+					</NuxtLink>
+				</div>
 			</div>
 		</div>
 		<div v-if="loading">Loading products...</div>
@@ -186,6 +188,9 @@ onMounted(async () => {
 		}
 
 		.content-container {
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
 			width: calc(50% - 9rem);
 			h2 {
 				@include switzer(600, normal);
