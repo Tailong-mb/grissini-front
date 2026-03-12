@@ -1,5 +1,5 @@
 import { getShopifyClient, cleanShopifyData } from '~/utils/shopify';
-const isOpen = ref(false);
+
 const CART_QUERIES = {
 	CREATE_CART: `
     mutation CreateCart($input: CartInput!) {
@@ -352,9 +352,11 @@ const CART_QUERIES = {
 };
 
 export const useCart = () => {
-	const cart = ref(null);
-	const loading = ref(false);
-	const error = ref(null);
+	const cart = useState('cart', () => null);
+	const loading = useState('cart-loading', () => false);
+	const error = useState('cart-error', () => null);
+	// État partagé via useState pour que tous les composants (Cart, CartIcon, page produit) voient la même instance
+	const isOpen = useState('cart-is-open', () => false);
 
 	const getStoredCartId = () => {
 		if (process.client) {
