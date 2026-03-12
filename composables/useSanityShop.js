@@ -13,7 +13,7 @@ export const useSanityShop = async () => {
     },
     "productCounts": {
       "all": length(*[_type == "product" && defined(store) && !store.isDeleted]),
-      "vinyls": length(*[_type == "product" && defined(store) && !store.isDeleted && lower(store.productType) == "vinyl"]),
+      "vinyls": length(*[_type == "product" && defined(store) && !store.isDeleted && lower(store.productType) == "vinyls"]),
       "cd": length(*[_type == "product" && defined(store) && !store.isDeleted && lower(store.productType) == "cd"]),
       "clothes": length(*[_type == "product" && defined(store) && !store.isDeleted && lower(store.productType) == "clothes"])
     }
