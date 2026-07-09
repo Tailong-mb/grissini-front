@@ -29,7 +29,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue';
+import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import { useSanityProductWithTranslations } from '@/composables/useSanityProductsWithTranslations';
 import { useI18n } from 'vue-i18n';
 import { getLocalizedText } from '@/utils/translate';
@@ -86,10 +86,10 @@ const formatDate = (dateStr) => {
 	}
 };
 
-const product = ref(null);
+const handle = computed(() => route.params.handle);
+const { data: product, pending: loading, error: fetchError } = await useSanityProductWithTranslations(handle);
 const selectedVariant = ref(null);
 const quantity = ref(1);
-const loading = ref(false);
 const error = ref(null);
 
 const localizedProduct = computed(() => {
@@ -139,57 +139,31 @@ useHead(() => ({
 	],
 }));
 
-const loadProduct = async () => {
-	loading.value = true;
-	error.value = null;
-
-	try {
-		const handle = route.params.handle;
-		const productData = await useSanityProductWithTranslations(handle);
-
-		if (!productData) {
-			throw new Error('Product not found');
-		}
-
-		product.value = productData;
-
-		await nextTick();
-
-		if (availableVariants.value.length > 0) {
-			selectedVariant.value = availableVariants.value[0];
-		} else {
-			error.value = 'This product is currently unavailable';
-		}
-		// Tracking: vue produit (pour GTM / GA4)
-		await nextTick();
-		const p = product.value;
-		const v = selectedVariant.value;
-		if (p && (v || p.priceRange?.minVariantPrice)) {
-			const price = v?.price?.amount != null ? parseFloat(v.price.amount) : parseFloat(p.priceRange?.minVariantPrice?.amount || 0);
-			const currency = v?.price?.currencyCode || p.priceRange?.minVariantPrice?.currencyCode || 'EUR';
-			trackViewItem({
-				itemId: v?.shopifyId || p._id,
-				itemName: getLocalizedText(p.translations?.title, locale.value) || p.title,
-				price,
-				currency,
-			});
-		}
-	} catch (err) {
-		error.value = err.message;
-		console.error('Product detail page error:', err);
-	} finally {
-		loading.value = false;
+watch(product, (p) => {
+	if (!p) return;
+	if (availableVariants.value.length > 0) {
+		selectedVariant.value = availableVariants.value[0];
+	} else {
+		error.value = 'This product is currently unavailable';
 	}
-};
+	const v = selectedVariant.value;
+	if (p && (v || p.priceRange?.minVariantPrice)) {
+		const price = v?.price?.amount != null ? parseFloat(v.price.amount) : parseFloat(p.priceRange?.minVariantPrice?.amount || 0);
+		const currency = v?.price?.currencyCode || p.priceRange?.minVariantPrice?.currencyCode || 'EUR';
+		trackViewItem({
+			itemId: v?.shopifyId || p._id,
+			itemName: getLocalizedText(p.translations?.title, locale.value) || p.title,
+			price,
+			currency,
+		});
+	}
+}, { immediate: true });
 
 const handleAddToCart = async () => {
 	if (!selectedVariant.value) {
 		console.error('No variant selected');
 		return;
 	}
-
-	console.log('Selected variant:', selectedVariant.value);
-	console.log('Shopify ID:', selectedVariant.value.shopifyId);
 
 	if (!selectedVariant.value.shopifyId) {
 		console.error('No Shopify ID found for selected variant');
@@ -222,7 +196,6 @@ const handleAddToCart = async () => {
 };
 
 onMounted(async () => {
-	await loadProduct();
 	await document.fonts.ready;
 	if (LOADER_PLAYED.PLAYED === 'false') {
 		openAnimation(3.2);
@@ -232,7 +205,6 @@ onMounted(async () => {
 });
 
 const openAnimation = (delay = 0) => {
-	console.log('DEBUG ICI 2', delay);
 	const tl = gsap.timeline({ delay: delay });
 
 	tl.fromTo(
@@ -275,7 +247,7 @@ const openAnimation = (delay = 0) => {
 	);
 };
 
-onMounted(() => {});
+
 </script>
 
 <style scoped lang="scss">

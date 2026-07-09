@@ -1,6 +1,6 @@
 import sanity from '@/utils/sanity';
 
-export const useSanityMenu = async () => {
+export const useSanityMenu = () => {
 	const query = `{
     "menu": *[_type == "menuSettings"][0]{
       "menuText": menu.menuText,
@@ -24,6 +24,5 @@ export const useSanityMenu = async () => {
     }
   }`;
 
-	const result = await sanity.fetch(query);
-	return result;
+	return useAsyncData('sanity-menu', () => sanity.fetch(query));
 };

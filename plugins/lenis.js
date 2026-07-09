@@ -13,5 +13,8 @@ gsap.ticker.add((time) => {
 gsap.ticker.lagSmoothing(0);
 
 export default defineNuxtPlugin((nuxtApp) => {
+	if (typeof window !== 'undefined') {
+		history.scrollRestoration = 'manual';
+	}
 	nuxtApp.provide('lenis', lenis);
 });

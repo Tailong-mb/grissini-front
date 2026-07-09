@@ -38,9 +38,7 @@ import { LOADER_PLAYED } from '@/utils/constant';
 
 const { locale } = useI18n();
 
-const homeData = ref(null);
-const loadingHome = ref(false);
-const errorHome = ref(null);
+const { data: homeData, pending: loadingHome, error: errorHome } = await useSanityHome();
 const classes = [
 	'absolute left display-none tb:col-start-1 tb:col-end-13',
 	'absolute left tb:col-start-1 tb:col-end-13',
@@ -160,36 +158,17 @@ const handleWheel = (event) => {
 	}, 50);
 };
 
-const loadHomeData = async () => {
-	loadingHome.value = true;
-	errorHome.value = null;
-	try {
-		homeData.value = await useSanityHome();
-	} catch (err) {
-		errorHome.value = err.message;
-		console.error('Home page error:', err);
-	} finally {
-		loadingHome.value = false;
+onMounted(() => {
+	if (LOADER_PLAYED.PLAYED === 'false') {
+		openAnimation(3.2);
+	} else {
+		openAnimation(0);
 	}
-};
 
-onMounted(async () => {
-	try {
-		await loadHomeData();
-		await nextTick();
-		if (LOADER_PLAYED.PLAYED === 'false') {
-			openAnimation(3.2);
-		} else {
-			openAnimation(0);
-		}
+	controlVideos();
 
-		controlVideos();
-
-		window.addEventListener('keydown', handleKeydown);
-		window.addEventListener('wheel', handleWheel, { passive: false });
-	} catch (err) {
-		errorHome.value = err;
-	}
+	window.addEventListener('keydown', handleKeydown);
+	window.addEventListener('wheel', handleWheel, { passive: false });
 });
 
 onUnmounted(() => {

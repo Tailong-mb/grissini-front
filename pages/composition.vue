@@ -39,7 +39,7 @@ const descriptionRef = ref(null);
 const emailRef = ref(null);
 const itemsRef = ref(null);
 const partitionSvgRef = ref(null);
-const compositionData = ref(null);
+const { data: compositionData } = await useSanityComposition();
 const viewData = computed(() => {
 	if (!compositionData.value) return null;
 
@@ -54,21 +54,6 @@ const viewData = computed(() => {
 		seo: compositionData.value.seo,
 	};
 });
-const loading = ref(false);
-const error = ref(null);
-
-const loadCompositionData = async () => {
-	loading.value = true;
-	error.value = null;
-	try {
-		compositionData.value = await useSanityComposition();
-	} catch (err) {
-		error.value = err.message;
-		console.error('Composition page error:', err);
-	} finally {
-		loading.value = false;
-	}
-};
 
 const openAnimation = (delay = 0) => {
 	const tl = gsap.timeline({ delay: delay });
@@ -133,7 +118,6 @@ const openAnimation = (delay = 0) => {
 	);
 };
 onMounted(async () => {
-	await loadCompositionData();
 	await document.fonts.ready;
 	if (LOADER_PLAYED.PLAYED === 'false') {
 		openAnimation(3.2);

@@ -1,7 +1,6 @@
 import sanity from '@/utils/sanity';
 
-export const useSanityShop = async () => {
-	// Requête optimisée qui récupère tout en une fois
+export const useSanityShop = () => {
 	const query = `{
     "shop": *[_type == "shop"][0]{
       "productsPerPage": productsPerPage,
@@ -19,14 +18,14 @@ export const useSanityShop = async () => {
     }
   }`;
 
-	const result = await sanity.fetch(query);
+	return useAsyncData('sanity-shop', async () => {
+		const result = await sanity.fetch(query);
 
-	// Assigner les compteurs aux catégories
-	if (result?.shop?.categories && result?.productCounts) {
-		result.shop.categories.forEach((category) => {
-			const count = result.productCounts[category.key] || 0;
-			category.count = count;
-		});
-	}
-	return result.shop;
+		if (result?.shop?.categories && result?.productCounts) {
+			result.shop.categories.forEach((category) => {
+				category.count = result.productCounts[category.key] || 0;
+			});
+		}
+		return result.shop;
+	});
 };

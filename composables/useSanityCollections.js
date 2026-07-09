@@ -1,10 +1,11 @@
 import sanity from '@/utils/sanity';
 
-export const useSanityCollections = async () => {
+export const useSanityCollections = () => {
 	const query = `*[_type == "collection"]{
     _id,
     "title": store.title,
     "slug": store.slug.current
   }`;
-	return await sanity.fetch(query);
+
+	return useAsyncData('sanity-collections', () => sanity.fetch(query));
 };

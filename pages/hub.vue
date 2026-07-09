@@ -66,9 +66,7 @@ import { LOADER_PLAYED } from '@/utils/constant';
 
 const { locale } = useI18n();
 
-const hubData = ref(null);
-const loading = ref(false);
-const error = ref(null);
+const { data: hubData, pending: loading, error } = await useSanityHub();
 const viewMode = ref('scroll');
 const viewScrollContentRef = ref(null);
 const currentActiveItem = ref(0);
@@ -82,17 +80,6 @@ const isAutoCentering = ref(false);
 const hubPageRef = ref(null);
 const viewText = computed(() => getLocalizedText(hubData.value?.viewText, locale.value));
 
-const loadHubData = async () => {
-	loading.value = true;
-	error.value = null;
-	try {
-		hubData.value = await useSanityHub(locale.value);
-	} catch (err) {
-		error.value = err.message;
-	} finally {
-		loading.value = false;
-	}
-};
 
 const centerActiveItem = (force = false) => {
 	if (!isDesktop.value || !videoScrollRefs.value[currentActiveItem.value] || isAutoCentering.value) return;
@@ -225,7 +212,6 @@ const openAnimation = (delay = 0) => {
 };
 
 onMounted(async () => {
-	await loadHubData();
 	await nextTick();
 	if (LOADER_PLAYED.PLAYED === 'false') {
 		openAnimation(3.2);

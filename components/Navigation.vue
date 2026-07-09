@@ -18,7 +18,7 @@ import { getLocalizedText } from '@/utils/translate';
 
 const { locale } = useI18n();
 const route = useRoute();
-const rawData = ref(null);
+const { data: rawData } = useSanityNavigation();
 
 const data = computed(() => {
 	if (!rawData.value?.mainNavigation) return null;
@@ -44,20 +44,6 @@ const isActiveLink = (linkUrl) => {
 	return pathWithoutLocale === linkWithoutLocale || pathWithoutLocale.startsWith(linkWithoutLocale + '/');
 };
 
-const loadNavigationData = async () => {
-	try {
-		rawData.value = await useSanityNavigation();
-		console.log('=== NAVIGATION DATA ===');
-		console.log('Raw Data:', rawData.value);
-		console.log('Current Locale:', locale.value);
-		console.log('Computed Data:', data.value);
-		console.log('========================');
-	} catch (err) {
-		console.error('Navigation loading error:', err);
-	}
-};
-
-onMounted(loadNavigationData);
 </script>
 
 <style lang="scss" scoped>

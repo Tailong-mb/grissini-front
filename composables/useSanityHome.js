@@ -1,9 +1,7 @@
 import sanity from '@/utils/sanity';
 
-export const useSanityHome = async () => {
-	try {
-		// Query based on actual homeItem schema
-		const query = `*[_type == "home"][0]{
+export const useSanityHome = () => {
+	const query = `*[_type == "home"][0]{
       "title": title,
       "items": items[]{
         _key,
@@ -17,14 +15,5 @@ export const useSanityHome = async () => {
       "seo": seo
     }`;
 
-		const data = await sanity.fetch(query);
-		console.log('=== SANITY HOME RAW DATA ===');
-		console.log('Raw data from Sanity:', data);
-		console.log('Data keys:', Object.keys(data || {}));
-		console.log('============================');
-		return data;
-	} catch (error) {
-		console.error('Error fetching home data:', error);
-		throw error;
-	}
+	return useAsyncData('sanity-home', () => sanity.fetch(query));
 };

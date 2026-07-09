@@ -1,6 +1,6 @@
 import sanity from '@/utils/sanity';
 
-export const useSanityNavigation = async () => {
+export const useSanityNavigation = () => {
 	const query = `*[_type == "navigationSettings"][0]{
     "mainNavigation": mainNavigation.links[]{
       "text": text,
@@ -9,6 +9,5 @@ export const useSanityNavigation = async () => {
     }
   }`;
 
-	const result = await sanity.fetch(query);
-	return result;
+	return useAsyncData('sanity-navigation', () => sanity.fetch(query));
 };

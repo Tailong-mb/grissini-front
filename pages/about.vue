@@ -1,5 +1,5 @@
 <template>
-	<div class="about-page">
+	<div class="about-page" ref="animationContainer">
 		<!-- Scroll View -->
 		<div v-if="aboutData && mappedItems && mappedItems.length > 0" class="view-scroll" :class="{ 'view-scroll-active': viewMode === 'scroll' }">
 			<AboutItem v-for="(item, index) in aboutData.items" :key="item._key || index" :item="item" :position="index % 2 === 0 ? 'left' : 'right'" />
@@ -10,7 +10,7 @@
 		</div>
 
 		<!-- View Selector -->
-		<div class="view-selector container">
+		<div class="view-selector container" data-animation="fade">
 			<div class="view-selector-content dk:col-start-4 dk:col-end-10">
 				<div class="title-view">{{ getLocalizedText(aboutData?.viewText, locale) }}</div>
 				<button class="view-button-scroll" @click="openViewSelector" :class="{ active: viewMode === 'scroll' }"></button>
@@ -27,16 +27,15 @@ import { useI18n } from 'vue-i18n';
 import HubVideo from '@/components/HubVideo.vue';
 import AboutItem from '@/components/AboutItem.vue';
 import { getLocalizedText } from '@/utils/translate';
+import { useAnimations } from '@/composables/useAnimations';
 
 const { locale } = useI18n();
 const { $lenis } = useNuxtApp();
+const { animationContainer } = useAnimations();
 
-const aboutData = ref(null);
-const loading = ref(false);
-const error = ref(null);
+const { data: aboutData, pending: loading, error } = await useSanityAbout(locale);
 const viewMode = ref('scroll');
 
-// Map About items to HubVideo expected structure
 const mappedItems = computed(() => {
 	const items = aboutData.value?.items || [];
 	return items.map((it) => ({
@@ -49,32 +48,6 @@ const mappedItems = computed(() => {
 		videoMobile: it.video ? { asset: { url: it.video.asset?.url } } : null,
 		videoDesktop: it.video ? { asset: { url: it.video.asset?.url } } : null,
 	}));
-});
-
-const loadAboutData = async () => {
-	loading.value = true;
-	error.value = null;
-	try {
-		aboutData.value = await useSanityAbout(locale.value);
-		console.log('=== ABOUT PAGE DATA ===');
-		console.log('Locale:', locale.value);
-		console.log('About Data:', aboutData.value);
-		console.log('Items:', aboutData.value?.items);
-		if (aboutData.value?.items?.[0]) {
-			console.log('First item:', aboutData.value.items[0]);
-			console.log('Social links:', aboutData.value.items[0].socialLinks);
-		}
-		console.log('========================');
-	} catch (err) {
-		error.value = err.message;
-		console.error('About page error:', err);
-	} finally {
-		loading.value = false;
-	}
-};
-
-onMounted(async () => {
-	await loadAboutData();
 });
 
 // Handlers

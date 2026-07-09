@@ -1,12 +1,12 @@
 <template>
-	<div class="products-page container">
-		<div v-if="localizedShopData?.categories" class="categories-wrapper col-start-1 col-end-6 tb:col-end-13">
+	<div class="products-page container" ref="animationContainer">
+		<div v-if="localizedShopData?.categories" class="categories-wrapper col-start-1 col-end-6 tb:col-end-13" data-animation="fade">
 			<button v-for="(category, index) in localizedShopData.categories" :key="category.key" @click="loadProducts(category.key)" :class="{ active: selectedCategory === category.key }">
 				{{ category.label }}
 				<span class="category-count" v-if="index !== 0">({{ category.count || 0 }})</span>
 			</button>
 		</div>
-		<div v-for="(product, index) in localizedProducts" :key="product._id" class="product-card col-start-1 col-end-6" :class="gridClass[index % gridClass.length]">
+		<div v-for="(product, index) in localizedProducts" :key="product._id" class="product-card col-start-1 col-end-6" :class="gridClass[index % gridClass.length]" data-animation="fadeIn" :data-animation-delay="index * 0.1">
 			<div class="image-container">
 				<img :src="product.images?.[0]?.asset?.url || product.previewImageUrl || '/placeholder-image.jpg'" :alt="product.translations?.title || product.title" />
 			</div>
@@ -31,16 +31,17 @@ import { useSanityShop } from '@/composables/useSanityShop';
 import { useSanityProductsWithTranslations } from '@/composables/useSanityProductsWithTranslations';
 import { useI18n } from 'vue-i18n';
 import { getLocalizedText } from '@/utils/translate';
+import { useAnimations } from '@/composables/useAnimations';
+
+const { animationContainer } = useAnimations();
 
 const { locale } = useI18n();
 
 const gridClass = ['tb:col-end-1 tb:col-start-3', 'tb:col-end-4 tb:col-start-6', 'tb:col-end-7 tb:col-start-9', 'tb:col-end-10 tb:col-start-13'];
 
-const shopData = ref(null);
-const products = ref(null);
 const selectedCategory = ref('all');
-const loading = ref(false);
-const error = ref(null);
+const { data: shopData } = await useSanityShop();
+const { data: products, pending: loading, error } = await useSanityProductsWithTranslations(selectedCategory);
 
 // Computed pour les données localisées
 const localizedShopData = computed(() => {
@@ -71,26 +72,8 @@ const localizedProducts = computed(() => {
 	}));
 });
 
-const loadShopData = async () => {
-	loading.value = true;
-	error.value = null;
-	try {
-		shopData.value = await useSanityShop();
-	} catch (err) {
-		error.value = err.message;
-		console.error('Shop page error:', err);
-	} finally {
-		loading.value = false;
-	}
-};
-
-const loadProducts = async (category = 'all') => {
+const loadProducts = (category = 'all') => {
 	selectedCategory.value = category;
-	try {
-		products.value = await useSanityProductsWithTranslations(category);
-	} catch (err) {
-		console.error('Products loading error:', err);
-	}
 };
 
 // Formater le prix
@@ -118,10 +101,6 @@ const formatPrice = (priceData) => {
 	return 'Prix non disponible';
 };
 
-onMounted(async () => {
-	await loadShopData();
-	await loadProducts('all');
-});
 </script>
 
 <style scoped lang="scss">

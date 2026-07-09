@@ -40,8 +40,8 @@ const { isOpen, closeMenu } = useMenu();
 const { openCart } = useCart();
 const { locale } = useI18n();
 const route = useRoute();
-const rawData = ref(null);
-const navigationData = ref(null);
+const { data: rawData } = useSanityMenu();
+const { data: navigationData } = useSanityNavigation();
 
 // Computed property to get localized menu data
 const data = computed(() => {
@@ -86,26 +86,6 @@ const isActiveLink = (linkUrl) => {
 	return pathWithoutLocale === linkWithoutLocale || pathWithoutLocale.startsWith(linkWithoutLocale + '/');
 };
 
-const loadMenuData = async () => {
-	try {
-		rawData.value = await useSanityMenu();
-		navigationData.value = await useSanityNavigation();
-		console.log('=== MENU DATA ===');
-		console.log('Raw Menu Data:', rawData.value);
-		console.log('Raw Navigation Data:', navigationData.value);
-		console.log('Current Locale:', locale.value);
-		console.log('Computed Menu Data:', data.value);
-		console.log('Computed Navigation Data:', localizedNavigationData.value);
-		console.log('Cart Menu Title:', data.value?.cartMenuTitle);
-		console.log('=================');
-	} catch (err) {
-		console.error('Menu loading error:', err);
-	}
-};
-
-onMounted(async () => {
-	await loadMenuData();
-});
 </script>
 
 <style lang="scss" scoped>

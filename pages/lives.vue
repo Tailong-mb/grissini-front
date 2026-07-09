@@ -1,5 +1,5 @@
 <template>
-	<div class="lives-page">
+	<div class="lives-page" ref="animationContainer">
 		<div class="background-wrapper">
 			<div v-for="(album, index) in displayedAlbums" :key="album.id" class="album-image" :class="{ hover: hoverAlbum === index }" :ref="albumImageRefs">
 				<img :src="album.imageUrl" :alt="album.title" />
@@ -33,7 +33,7 @@
 				</div>
 			</a>
 		</div>
-		<div class="pagination" v-if="isDesktop && totalPages > 1">
+		<div class="pagination" v-if="isDesktop && totalPages > 1" data-animation="fade">
 			<div class="pagination-pages">
 				<button v-for="page in totalPages" :key="page" class="pagination-page" :class="{ active: currentPage === page }" @click="goToPage(page)"></button>
 			</div>
@@ -44,6 +44,9 @@
 <script setup>
 import { onMounted, onUnmounted, nextTick, ref, computed, watch } from 'vue';
 import { gsap } from 'gsap';
+import { useAnimations } from '@/composables/useAnimations';
+
+const { animationContainer } = useAnimations();
 
 const classes = ['tb:col-start-2 tb:col-end-4 dk:col-start-2 dk:col-end-4', ' tb:col-start-6 tb:col-end-8 dk:col-start-6 dk:col-end-8', ' tb:col-start-10 tb:col-end-12 dk:col-start-10 dk:col-end-12'];
 

@@ -24,9 +24,8 @@ import { getLocalizedText } from '@/utils/translate';
 const { locale } = useI18n();
 const { openNewsletter } = useNewsletter();
 const { isOpen, toggleMenu } = useMenu();
-const rawData = ref(null);
+const { data: rawData } = useSanityMenu();
 
-// Computed property to get localized menu data
 const data = computed(() => {
 	if (!rawData.value) return null;
 
@@ -44,21 +43,6 @@ const data = computed(() => {
 			})) || [],
 	};
 });
-
-const loadMenuData = async () => {
-	try {
-		rawData.value = await useSanityMenu();
-		console.log('=== HEADER MENU DATA ===');
-		console.log('Raw Data:', rawData.value);
-		console.log('Current Locale:', locale.value);
-		console.log('Computed Data:', data.value);
-		console.log('========================');
-	} catch (err) {
-		console.error('Header menu loading error:', err);
-	}
-};
-
-onMounted(loadMenuData);
 </script>
 
 <style lang="scss" scoped>

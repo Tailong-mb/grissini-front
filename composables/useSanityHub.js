@@ -1,6 +1,6 @@
 import sanity from '@/utils/sanity';
 
-export const useSanityHub = async () => {
+export const useSanityHub = () => {
 	const query = `*[_type == "hub"][0]{
     "viewText": viewText,
     "watchAllText": watchAllText,
@@ -42,6 +42,5 @@ export const useSanityHub = async () => {
     "seo": seo
   }`;
 
-	const result = await sanity.fetch(query);
-	return result;
+	return useAsyncData('sanity-hub', () => sanity.fetch(query));
 };

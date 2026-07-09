@@ -31,7 +31,7 @@ import { getLocalizedText } from '@/utils/translate';
 
 const { locale } = useI18n();
 const { isOpen, closeNewsletter } = useNewsletter();
-const rawData = ref(null);
+const { data: rawData } = useSanityMenu();
 const email = ref('');
 const isSubmitting = ref(false);
 const submitMessage = ref('');
@@ -98,17 +98,6 @@ const handleSubmit = async () => {
 	}
 };
 
-const loadNewsletterData = async () => {
-	try {
-		rawData.value = await useSanityMenu();
-	} catch (err) {
-		console.error('Newsletter loading error:', err);
-	}
-};
-
-onMounted(async () => {
-	await loadNewsletterData();
-});
 </script>
 
 <style lang="scss" scoped>

@@ -1,27 +1,29 @@
 import sanity from '@/utils/sanity';
 
-export const useSanityMentionsLegales = async (locale = 'en') => {
-	const query = `*[_type == "mentionsLegales"][0]{
-    "title": coalesce(title.${locale}, title.en),
-    "content": coalesce(content.${locale}, content.en)[]{
-      ...,
-      markDefs[]{
+export const useSanityMentionsLegales = (locale) => {
+	return useAsyncData('sanity-mentions-legales', () => {
+		const l = toValue(locale);
+		const query = `*[_type == "mentionsLegales"][0]{
+      "title": coalesce(title.${l}, title.en),
+      "content": coalesce(content.${l}, content.en)[]{
         ...,
-        _type == "linkInternal" => {
-          "url": select(
-            reference->._type == "product" => "/products/" + reference->store.slug.current,
-            reference->._type == "collection" => "/collections/" + reference->store.slug.current,
-            reference->._type == "cgv" => "/cgv",
-            reference->._type == "mentionsLegales" => "/mentions-legales",
-            reference->._type == "home" => "/",
-            "/"
-          )
+        markDefs[]{
+          ...,
+          _type == "linkInternal" => {
+            "url": select(
+              reference->._type == "product" => "/products/" + reference->store.slug.current,
+              reference->._type == "collection" => "/collections/" + reference->store.slug.current,
+              reference->._type == "cgv" => "/cgv",
+              reference->._type == "mentionsLegales" => "/mentions-legales",
+              reference->._type == "home" => "/",
+              "/"
+            )
+          }
         }
-      }
-    },
-    "seo": seo
-  }`;
+      },
+      "seo": seo
+    }`;
 
-	const result = await sanity.fetch(query);
-	return result;
+		return sanity.fetch(query);
+	}, { watch: [locale] });
 };

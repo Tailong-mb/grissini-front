@@ -59,9 +59,7 @@ const { locale } = useI18n();
 const { isOpen, closeCart, cart: cartData, updateCartLine, removeFromCart, initializeCart } = useCart();
 const { appendConsentToCheckoutUrl } = useConsent();
 const { trackBeginCheckout } = useTracking();
-const rawData = ref(null);
-
-// NOTE: données réelles du panier via useCart()
+const { data: rawData } = useSanityMenu();
 
 const data = computed(() => {
 	if (!rawData.value) return null;
@@ -131,16 +129,7 @@ const goToCheckout = () => {
 	window.location.href = urlWithConsent;
 };
 
-const loadCartData = async () => {
-	try {
-		rawData.value = await useSanityMenu();
-	} catch (err) {
-		console.error('Cart loading error:', err);
-	}
-};
-
 onMounted(async () => {
-	await loadCartData();
 	await initializeCart();
 });
 </script>
