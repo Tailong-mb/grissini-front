@@ -59,6 +59,8 @@ export default defineNuxtConfig({
 	runtimeConfig: {
 		mailchimpApiKey: process.env.MAILCHIMP_API_KEY,
 		mailchimpAudienceId: process.env.MAILCHIMP_AUDIENCE_ID,
+		notionApiToken: process.env.NOTION_API_TOKEN,
+		notionConcertsDatabaseId: process.env.NOTION_CONCERTS_DATABASE_ID,
 		public: {
 			SHOPIFY_STORE_DOMAIN: process.env.SHOPIFY_STORE_DOMAIN,
 			SHOPIFY_STOREFRONT_ACCESS_TOKEN: process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN,

@@ -2,7 +2,7 @@
 	<div class="lives-page" ref="animationContainer">
 		<div class="background-wrapper">
 			<div v-for="(album, index) in displayedAlbums" :key="album.id" class="album-image" :class="{ hover: hoverAlbum === index }" :ref="albumImageRefs">
-				<img :src="album.imageUrl" :alt="album.title" />
+				<img v-if="album.imageUrl" :src="album.imageUrl" :alt="album.title" />
 			</div>
 		</div>
 		<div class="container album-container">
@@ -19,7 +19,7 @@
 					:hover="true"
 					:to="album.link"
 				/>
-				<div class="image-wrapper">
+				<div v-if="album.imageUrl" class="image-wrapper">
 					<div
 						class="image-subwrapper"
 						:ref="
@@ -117,42 +117,26 @@ const createParallax = () => {
 
 onMounted(async () => {
 	try {
-		albums.value = [];
+		const concerts = await $fetch('/api/concerts');
 
-		const now = new Date();
-		const start = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} 00:00:00`;
-		const endDate = new Date(now);
-		endDate.setFullYear(now.getFullYear() + 2);
-		const end = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')} 23:59:59`;
-
-		const restUrl = `https://www.grandes-scenes.com/wp-json/tribe/events/v1/events/?page=1&per_page=50&start_date=${encodeURIComponent(start)}&end_date=${encodeURIComponent(end)}&status=publish`;
-		const response = await $fetch(restUrl);
-
-		const mapEventToItem = (ev) => {
-			const hour = ev.start_date_details?.hour ?? '';
-			const minutes = ev.start_date_details?.minutes ?? '';
-			const time = hour && minutes ? `${hour.padStart(2, '0')}:${minutes.padStart(2, '0')}` : '';
-			const venue = ev.venue?.venue || ev.venue?.city || '';
-			const formattedDate = formatEventDate(ev.start_date);
-			const primaryCategory = ev.categories && ev.categories.length > 0 ? ev.categories[0].name : ev.venue?.city || '';
+		albums.value = concerts.map((concert) => {
+			const formattedDate = formatEventDate(concert.date);
 			return {
-				id: ev.id,
-				title: ev.title,
-				subtext: venue,
-				time: formattedDate,
-				imageUrl: ev.image?.url || '',
-				link: ev.website || ev.url || '#',
-				tag: primaryCategory,
+				id: concert.id,
+				title: concert.title,
+				subtext: `${concert.city}, ${concert.country}`,
+				time: concert.time ? `${formattedDate} - ${concert.time}` : formattedDate,
+				imageUrl: '',
+				link: concert.ticketUrl,
+				tag: concert.country,
 			};
-		};
-
-		albums.value = (response?.events || []).map(mapEventToItem);
+		});
 
 		setTimeout(() => {
 			createParallax();
 		}, 100);
 	} catch (error) {
-		console.error('Erreur lors du chargement des albums:', error);
+		console.error('Erreur lors du chargement des concerts:', error);
 	}
 
 	await nextTick();
@@ -165,8 +149,6 @@ onMounted(async () => {
 		ease: 'linear',
 		stagger: 0.1,
 	});
-
-	// tag animations removed
 });
 
 onUnmounted(() => {
