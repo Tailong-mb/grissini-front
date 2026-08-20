@@ -126,7 +126,7 @@ onMounted(async () => {
 				title: concert.title,
 				subtext: `${concert.city}, ${concert.country}`,
 				time: concert.time ? `${formattedDate} - ${concert.time}` : formattedDate,
-				imageUrl: '',
+				imageUrl: concert.imageUrl || '',
 				link: concert.ticketUrl,
 				tag: concert.country,
 			};

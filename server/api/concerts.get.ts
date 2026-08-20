@@ -73,6 +73,8 @@ export default defineEventHandler(async () => {
 			city: getTextValue(props['City']),
 			country: getTextValue(props['Country']),
 			ticketUrl: getTextValue(props['URL Tickets']),
+			// TODO placeholder temporaire pour prévisualisation (aucune colonne image dans Notion) — à retirer / brancher sur la vraie colonne image
+			imageUrl: 'https://www.grandes-scenes.com/wp-content/uploads/2026/03/Concert-on-Titan-300-x-300-1.png',
 		};
 	});
 
