@@ -2,10 +2,12 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 import { CustomEase } from 'gsap/CustomEase';
+import { SplitText } from 'gsap/SplitText';
 import { Flip } from 'gsap/Flip';
 
-gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, CustomEase, Flip);
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, CustomEase, SplitText, Flip);
 gsap.config({ force3D: true });
+ScrollTrigger.config({ ignoreMobileResize: true });
 gsap.defaults({
 	ease: 'none',
 });

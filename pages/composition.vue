@@ -56,6 +56,8 @@ const viewData = computed(() => {
 });
 
 const openAnimation = (delay = 0) => {
+	if (!descriptionRef.value || !titleRef.value) return;
+
 	const tl = gsap.timeline({ delay: delay });
 
 	const descriptionSplit = SplitText.create(descriptionRef.value, {

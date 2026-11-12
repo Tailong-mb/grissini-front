@@ -4,9 +4,9 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 const animationRegistry = new Map();
 
 const defaultOpts = {
-  duration: 0.8,
-  ease: "linear",
-  stagger: 0.15,
+  duration: 1,
+  ease: "power2.out",
+  stagger: 0.1,
 };
 
 function parseOpts(el) {
@@ -36,32 +36,24 @@ animationRegistry.set("fade", (el, opts) => {
   });
 });
 
-// Fade + translate up
+// Fade + translate up (mouvement + opacité ensemble, pattern labs `rise`)
 animationRegistry.set("fadeIn", (el, opts) => {
-  gsap.set(el, { autoAlpha: 0, yPercent: 30 });
-  const tl = gsap.timeline({
-    scrollTrigger: {
-      trigger: el,
-      start: "top 90%",
-      once: true,
-    },
-  });
-  tl.to(el, {
-    yPercent: 0,
-    duration: 0.8,
-    delay: opts.delay,
-    ease: "power2.out",
-  });
-  tl.to(
+  return gsap.fromTo(
     el,
+    { autoAlpha: 0, y: 30 },
     {
       autoAlpha: 1,
-      duration: 0.4,
-      ease: "linear",
-    },
-    0
+      y: 0,
+      duration: opts.duration,
+      delay: opts.delay,
+      ease: opts.ease,
+      scrollTrigger: {
+        trigger: el,
+        start: "top 88%",
+        once: true,
+      },
+    }
   );
-  return tl;
 });
 
 // Stagger children with translate up
@@ -69,31 +61,23 @@ animationRegistry.set("fadeIn-stagger", (el, opts) => {
   const children = el.children;
   if (!children.length) return;
 
-  gsap.set(children, { autoAlpha: 0, yPercent: 80 });
-  const tl = gsap.timeline({
-    scrollTrigger: {
-      trigger: el,
-      start: "top bottom",
-      once: true,
-    },
-  });
-  tl.to(children, {
-    yPercent: 0,
-    duration: 0.8,
-    ease: "power2.out",
-    stagger: opts.stagger,
-  });
-  tl.to(
+  return gsap.fromTo(
     children,
+    { autoAlpha: 0, y: 30 },
     {
       autoAlpha: 1,
-      duration: 0.4,
-      ease: "linear",
+      y: 0,
+      duration: opts.duration,
+      delay: opts.delay,
+      ease: opts.ease,
       stagger: opts.stagger,
-    },
-    0.6
+      scrollTrigger: {
+        trigger: el,
+        start: "top 85%",
+        once: true,
+      },
+    }
   );
-  return tl;
 });
 
 // Stagger children from random order
