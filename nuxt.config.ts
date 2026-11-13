@@ -67,6 +67,8 @@ export default defineNuxtConfig({
 			SHOPIFY_STOREFRONT_API_VERSION: process.env.SHOPIFY_STOREFRONT_API_VERSION,
 			/** Google Tag Manager container ID (e.g. GTM-XXXXXX). Used with Cookie Information for consent-aware tracking. */
 			GTM_ID: process.env.NUXT_PUBLIC_GTM_ID || '',
+			/** Mode shop only : redirige tout vers /products (+ légal) et filtre le menu. */
+			shopOnly: process.env.NUXT_PUBLIC_SHOP_ONLY === 'true',
 		},
 	},
 
