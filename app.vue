@@ -17,6 +17,30 @@ import NavigationBottom from '@/components/NavigationBottom.vue';
 import Newsletter from '@/components/Newsletter.vue';
 import Cart from '@/components/Cart.vue';
 import pageTransition from '@/helpers/transitionConfig';
+import { SITE_NAME } from '@/utils/seo';
+
+const { siteUrl } = useRuntimeConfig().public;
+
+// html lang, canonical, hreflang (+ x-default) et og:locale par langue
+const localeHead = useLocaleHead({ dir: false, lang: true, seo: true });
+
+useHead(() => ({
+	htmlAttrs: { lang: localeHead.value.htmlAttrs?.lang },
+	link: [...(localeHead.value.link || [])],
+	meta: [...(localeHead.value.meta || [])],
+	script: [
+		{
+			type: 'application/ld+json',
+			innerHTML: JSON.stringify({
+				'@context': 'https://schema.org',
+				'@graph': [
+					{ '@type': 'Organization', name: SITE_NAME, url: siteUrl, logo: `${siteUrl}/favicon.svg` },
+					{ '@type': 'WebSite', name: SITE_NAME, url: siteUrl },
+				],
+			}),
+		},
+	],
+}));
 </script>
 
 <style lang="scss">

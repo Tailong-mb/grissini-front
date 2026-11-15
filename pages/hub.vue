@@ -67,6 +67,8 @@ import { LOADER_PLAYED } from '@/utils/constant';
 const { locale } = useI18n();
 
 const { data: hubData, pending: loading, error } = await useSanityHub();
+
+useSeo(() => ({ seo: hubData.value?.seo, title: 'Hub' }));
 const viewMode = ref('scroll');
 const viewScrollContentRef = ref(null);
 const currentActiveItem = ref(0);

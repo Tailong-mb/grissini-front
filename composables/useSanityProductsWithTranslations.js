@@ -8,14 +8,15 @@ export const useSanityProductsWithTranslations = (category, page, limit) => {
 			const p = toValue(page) || 1;
 			const l = toValue(limit) || 12;
 
-			let filterQuery = `*[_type == "product" && defined(store) && !store.isDeleted`;
+			// Seuls les produits publiés dans Shopify (status active), comme Aishy / starter SETUP
+			let filterQuery = `*[_type == "product" && defined(store) && !store.isDeleted && store.status == "active"`;
 			if (cat && cat !== 'all') {
-				filterQuery += ` && lower(store.productType) == "${cat}"`;
+				filterQuery += ` && lower(store.productType) == $category`;
 			}
 			filterQuery += `]`;
 
-			const start = (p - 1) * l;
-			const end = start + l;
+			const start = (Number(p) - 1) * Number(l);
+			const end = start + Number(l);
 
 			const query = `${filterQuery}[${start}...${end}]{
         _id,
@@ -57,9 +58,9 @@ export const useSanityProductsWithTranslations = (category, page, limit) => {
         "seo": seo
       }`;
 
-			return sanity.fetch(query);
+			return sanity.fetch(query, { category: String(cat).toLowerCase() });
 		},
-		{ watch: [category, page] },
+		{ watch: [() => toValue(category), () => toValue(page)] },
 	);
 };
 
@@ -67,7 +68,7 @@ export const useSanityProductWithTranslations = (slug) => {
 	return useAsyncData(
 		`sanity-product-${toValue(slug)}`,
 		() => {
-			const query = `*[_type == "product" && store.slug.current == $slug && !store.isDeleted][0]{
+			const query = `*[_type == "product" && store.slug.current == $slug && !store.isDeleted && store.status == "active"][0]{
         _id,
         "title": store.title,
         "slug": store.slug.current,

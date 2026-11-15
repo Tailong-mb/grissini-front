@@ -10,6 +10,7 @@ function ensureDataLayer() {
 
 export function useTracking() {
 	function push(eventName, payload = {}) {
+		if (typeof window === 'undefined') return;
 		ensureDataLayer();
 		window.dataLayer.push({
 			event: eventName,

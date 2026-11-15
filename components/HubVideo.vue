@@ -114,14 +114,14 @@ const handleResize = () => {
 onMounted(async () => {
 	await nextTick();
 
-	if (process.client) {
+	if (import.meta.client) {
 		window.addEventListener('resize', handleResize);
 		handleResize();
 	}
 });
 
 onUnmounted(() => {
-	if (process.client) {
+	if (import.meta.client) {
 		window.removeEventListener('resize', handleResize);
 	}
 

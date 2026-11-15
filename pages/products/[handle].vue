@@ -1,7 +1,7 @@
 <template>
 	<div v-if="localizedProduct" class="container product-detail-page">
 		<div class="image-mobile-container col-start-1 col-end-6">
-			<img v-for="image in localizedProduct?.images" :key="image._id" :src="image.asset.url" :alt="localizedProduct.translations?.title || localizedProduct.title" />
+			<img v-for="image in localizedProduct?.images" :key="image._id" :src="sanityImage(image.asset.url, 1400)" :alt="localizedProduct.translations?.title || localizedProduct.title" />
 		</div>
 		<div class="content-container col-start-2 col-end-6">
 			<h1 ref="titleRef">{{ localizedProduct?.translations?.title || localizedProduct?.title }}</h1>
@@ -23,7 +23,7 @@
 			</button>
 		</div>
 		<div class="image-desktop-container tb:col-start-7 tb:col-end-11">
-			<img v-for="image in localizedProduct?.images" :key="image._id" :src="image.asset.url" :alt="localizedProduct.translations?.title || localizedProduct.title" />
+			<img v-for="image in localizedProduct?.images" :key="image._id" :src="sanityImage(image.asset.url, 1400)" :alt="localizedProduct.translations?.title || localizedProduct.title" />
 		</div>
 	</div>
 </template>
@@ -33,6 +33,7 @@ import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import { useSanityProductWithTranslations } from '@/composables/useSanityProductsWithTranslations';
 import { useI18n } from 'vue-i18n';
 import { getLocalizedText } from '@/utils/translate';
+import { sanityImage } from '@/utils/sanity';
 import { gsap } from 'gsap';
 import { LOADER_PLAYED } from '@/utils/constant';
 
@@ -88,6 +89,12 @@ const formatDate = (dateStr) => {
 
 const handle = computed(() => route.params.handle);
 const { data: product, pending: loading, error: fetchError } = await useSanityProductWithTranslations(handle);
+
+// Produit inexistant ou non publié (draft) : vraie 404 (SEO) plutôt qu'une page vide
+if (!product.value && !fetchError.value) {
+	throw createError({ statusCode: 404, statusMessage: 'Product not found', fatal: true });
+}
+
 const selectedVariant = ref(null);
 const quantity = ref(1);
 const error = ref(null);
@@ -129,14 +136,11 @@ const availableVariants = computed(() => {
 	return product.value.variants.filter((variant) => variant.shopifyId && variant.shopifyId.startsWith('gid://shopify/ProductVariant/'));
 });
 
-useHead(() => ({
-	title: localizedProduct.value ? `${localizedProduct.value.translations?.title || localizedProduct.value.title} - Grissini` : 'Product - Grissini',
-	meta: [
-		{
-			name: 'description',
-			content: localizedProduct.value?.translations?.description || localizedProduct.value?.title || 'Product details',
-		},
-	],
+useSeo(() => ({
+	seo: product.value?.seo,
+	title: localizedProduct.value?.translations?.title || localizedProduct.value?.title,
+	description: localizedProduct.value?.translations?.shortDescription || localizedProduct.value?.translations?.description,
+	image: product.value?.images?.[0] || product.value?.previewImageUrl,
 }));
 
 watch(product, (p) => {

@@ -11,10 +11,10 @@ export const useSanityShop = () => {
       "seo": seo
     },
     "productCounts": {
-      "all": length(*[_type == "product" && defined(store) && !store.isDeleted]),
-      "vinyls": length(*[_type == "product" && defined(store) && !store.isDeleted && lower(store.productType) == "vinyls"]),
-      "cd": length(*[_type == "product" && defined(store) && !store.isDeleted && lower(store.productType) == "cd"]),
-      "clothes": length(*[_type == "product" && defined(store) && !store.isDeleted && lower(store.productType) == "clothes"])
+      "all": length(*[_type == "product" && defined(store) && !store.isDeleted && store.status == "active"]),
+      "vinyls": length(*[_type == "product" && defined(store) && !store.isDeleted && store.status == "active" && lower(store.productType) == "vinyls"]),
+      "cd": length(*[_type == "product" && defined(store) && !store.isDeleted && store.status == "active" && lower(store.productType) == "cd"]),
+      "clothes": length(*[_type == "product" && defined(store) && !store.isDeleted && store.status == "active" && lower(store.productType) == "clothes"])
     }
   }`;
 

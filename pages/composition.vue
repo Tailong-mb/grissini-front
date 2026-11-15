@@ -40,6 +40,8 @@ const emailRef = ref(null);
 const itemsRef = ref(null);
 const partitionSvgRef = ref(null);
 const { data: compositionData } = await useSanityComposition();
+
+useSeo(() => ({ seo: compositionData.value?.seo, title: 'Composition' }));
 const viewData = computed(() => {
 	if (!compositionData.value) return null;
 

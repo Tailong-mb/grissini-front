@@ -39,6 +39,8 @@ import { LOADER_PLAYED } from '@/utils/constant';
 const { locale } = useI18n();
 
 const { data: homeData, pending: loadingHome, error: errorHome } = await useSanityHome();
+
+useSeo(() => ({ seo: homeData.value?.seo }));
 const classes = [
 	'absolute left display-none tb:col-start-1 tb:col-end-13',
 	'absolute left tb:col-start-1 tb:col-end-13',

@@ -24,6 +24,8 @@ const { animationContainer } = useAnimations();
 const { locale } = useI18n();
 const { data: mentionsData } = await useSanityMentionsLegales(locale);
 
+useSeo(() => ({ seo: mentionsData.value?.seo, title: mentionsData.value?.title || 'Legal notice' }));
+
 const pageData = computed(() => {
 	if (!mentionsData.value) return null;
 	return {

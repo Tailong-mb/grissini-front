@@ -49,6 +49,5 @@ export function cleanShopifyData(data) {
   if (!data) return null;
   
   // Supprimer les propriétés __typename de GraphQL
-  const clean = JSON.parse(JSON.stringify(data));
-  return clean;
+  return JSON.parse(JSON.stringify(data), (key, value) => (key === '__typename' ? undefined : value));
 } 

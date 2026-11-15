@@ -359,14 +359,14 @@ export const useCart = () => {
 	const isOpen = useState('cart-is-open', () => false);
 
 	const getStoredCartId = () => {
-		if (process.client) {
+		if (import.meta.client) {
 			return localStorage.getItem('shopify_cart_id');
 		}
 		return null;
 	};
 
 	const storeCartId = (cartId) => {
-		if (process.client) {
+		if (import.meta.client) {
 			localStorage.setItem('shopify_cart_id', cartId);
 		}
 	};
@@ -523,12 +523,23 @@ export const useCart = () => {
 	const clearCart = async () => {
 		if (!cart.value) return;
 
+		// Une seule mutation pour toutes les lignes (pattern starter SETUP)
 		const lineIds = cart.value.lines.edges.map((edge) => edge.node.id);
-		if (lineIds.length > 0) {
-			await removeFromCart(lineIds[0]);
-			if (lineIds.length > 1) {
-				await clearCart();
+		if (lineIds.length === 0) return;
+
+		loading.value = true;
+		error.value = null;
+		try {
+			const data = await getShopifyClient().request(CART_QUERIES.REMOVE_FROM_CART, { cartId: cart.value.id, lineIds });
+			if (data.cartLinesRemove.userErrors.length > 0) {
+				throw new Error(data.cartLinesRemove.userErrors[0].message);
 			}
+			cart.value = cleanShopifyData(data.cartLinesRemove.cart);
+		} catch (err) {
+			error.value = err.message;
+			throw err;
+		} finally {
+			loading.value = false;
 		}
 	};
 
@@ -539,7 +550,7 @@ export const useCart = () => {
 				await getCart(storedCartId);
 			} catch (err) {
 				// Si le panier n'existe plus, le supprimer du localStorage
-				if (process.client) {
+				if (import.meta.client) {
 					localStorage.removeItem('shopify_cart_id');
 				}
 			}

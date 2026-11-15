@@ -8,7 +8,7 @@
 		</div>
 		<div v-for="(product, index) in localizedProducts" :key="product._id" class="product-card col-start-1 col-end-6" :class="gridClass[index % gridClass.length]" data-animation="fadeIn" :data-animation-delay="index * 0.1">
 			<div class="image-container">
-				<img :src="product.images?.[0]?.asset?.url || product.previewImageUrl || '/placeholder-image.jpg'" :alt="product.translations?.title || product.title" />
+				<img v-if="product.images?.[0]?.asset?.url || product.previewImageUrl" :src="sanityImage(product.images?.[0]?.asset?.url, 800) || product.previewImageUrl" :alt="product.translations?.title || product.title" loading="lazy" decoding="async" />
 			</div>
 			<div class="content-container">
 				<h2>{{ product.translations?.title || product.title }}</h2>
@@ -31,6 +31,7 @@ import { useSanityShop } from '@/composables/useSanityShop';
 import { useSanityProductsWithTranslations } from '@/composables/useSanityProductsWithTranslations';
 import { useI18n } from 'vue-i18n';
 import { getLocalizedText } from '@/utils/translate';
+import { sanityImage } from '@/utils/sanity';
 import { useAnimations } from '@/composables/useAnimations';
 
 const { animationContainer } = useAnimations();
@@ -42,6 +43,8 @@ const gridClass = ['tb:col-end-1 tb:col-start-3', 'tb:col-end-4 tb:col-start-6',
 const selectedCategory = ref('all');
 const { data: shopData } = await useSanityShop();
 const { data: products, pending: loading, error } = await useSanityProductsWithTranslations(selectedCategory);
+
+useSeo(() => ({ seo: shopData.value?.seo, title: 'Shop' }));
 
 // Computed pour les données localisées
 const localizedShopData = computed(() => {

@@ -34,12 +34,14 @@ const { $lenis } = useNuxtApp();
 const { animationContainer } = useAnimations();
 
 const { data: aboutData, pending: loading, error } = await useSanityAbout(locale);
+
+useSeo(() => ({ seo: aboutData.value?.seo, title: 'About' }));
 const viewMode = ref('scroll');
 
 const mappedItems = computed(() => {
 	const items = aboutData.value?.items || [];
-	return items.map((it) => ({
-		_key: it._key || `${it.title}-${Math.random().toString(36).slice(2)}`,
+	return items.map((it, index) => ({
+		_key: it._key || `about-${index}`,
 		title: getLocalizedText(it.title, locale.value) || '',
 		subtitle: getLocalizedText(it.description, locale.value) || '',
 		link: it.link || '#',

@@ -12,14 +12,12 @@
 		"nuxt": "3.19.2",
 		"prettier": "^3.6.2",
 		"sass": "^1.92.1",
-		"vite-plugin-eslint": "^1.8.1",
 		"vue-i18n": "^11.1.12"
 	},
 	"dependencies": {
 		"@nuxtjs/i18n": "^10.1.0",
 		"@portabletext/vue": "^1.0.14",
 		"@sanity/client": "^7.11.0",
-		"@shopify/shopify-api": "^11.14.1",
 		"graphql": "^16.11.0",
 		"graphql-request": "^7.2.0",
 		"gsap": "^3.13.0",

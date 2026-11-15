@@ -1,49 +1,45 @@
-import * as sass from 'sass';
+import { SITE_NAME, DEFAULT_SITE_URL, DEFAULT_DESCRIPTION, DEFAULT_OG_IMAGE } from './utils/seo';
+
+const SITE_URL = process.env.NUXT_PUBLIC_SITE_URL || DEFAULT_SITE_URL;
 
 // https://v3.nuxtjs.org/api/configuration/nuxt.config
 export default defineNuxtConfig({
-	ssr: false,
+	ssr: true,
 	devtools: { enabled: false },
 
 	modules: ['@nuxtjs/i18n'],
 
+	// Defaults globaux (surchargés page par page via useSeo, rendu côté serveur).
+	app: {
+		head: {
+			htmlAttrs: { lang: 'en' },
+			title: SITE_NAME,
+			meta: [
+				{ name: 'description', content: DEFAULT_DESCRIPTION },
+				{ name: 'theme-color', content: '#ffffff' },
+				{ property: 'og:site_name', content: SITE_NAME },
+				{ property: 'og:type', content: 'website' },
+				{ property: 'og:title', content: SITE_NAME },
+				{ property: 'og:description', content: DEFAULT_DESCRIPTION },
+				{ property: 'og:image', content: DEFAULT_OG_IMAGE },
+				{ property: 'og:image:width', content: '1200' },
+				{ property: 'og:image:height', content: '630' },
+				{ name: 'twitter:card', content: 'summary_large_image' },
+			],
+			link: [{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
+		},
+	},
+
 	i18n: {
+		baseUrl: SITE_URL,
 		locales: [
-			{
-				code: 'en',
-				name: 'English',
-				file: 'en.json',
-			},
-			{
-				code: 'fr',
-				name: 'Français',
-				file: 'fr.json',
-			},
-			{
-				code: 'zh',
-				name: '中文',
-				file: 'zh.json',
-			},
-			{
-				code: 'no',
-				name: 'Norsk',
-				file: 'no.json',
-			},
-			{
-				code: 'sv',
-				name: 'Svenska',
-				file: 'sv.json',
-			},
-			{
-				code: 'ja',
-				name: '日本語',
-				file: 'ja.json',
-			},
-			{
-				code: 'es',
-				name: 'Español',
-				file: 'es.json',
-			},
+			{ code: 'en', language: 'en', name: 'English', file: 'en.json' },
+			{ code: 'fr', language: 'fr', name: 'Français', file: 'fr.json' },
+			{ code: 'zh', language: 'zh', name: '中文', file: 'zh.json' },
+			{ code: 'no', language: 'nb', name: 'Norsk', file: 'no.json' },
+			{ code: 'sv', language: 'sv', name: 'Svenska', file: 'sv.json' },
+			{ code: 'ja', language: 'ja', name: '日本語', file: 'ja.json' },
+			{ code: 'es', language: 'es', name: 'Español', file: 'es.json' },
 		],
 		defaultLocale: 'en',
 		lazy: true,
@@ -69,11 +65,19 @@ export default defineNuxtConfig({
 			GTM_ID: process.env.NUXT_PUBLIC_GTM_ID || '',
 			/** Mode shop only : redirige tout vers /products (+ légal) et filtre le menu. */
 			shopOnly: process.env.NUXT_PUBLIC_SHOP_ONLY === 'true',
+			/** URL de prod : canonical, hreflang, og:url, sitemap. */
+			siteUrl: SITE_URL,
+			sanity: {
+				projectId: process.env.SANITY_PROJECT_ID || 'f7eqgv37',
+				dataset: process.env.SANITY_DATASET || 'production',
+				apiVersion: process.env.SANITY_API_VERSION || '2025-07-23',
+				useCdn: true,
+			},
 		},
 	},
 
 	build: {
-		transpile: ['three', 'gsap'],
+		transpile: ['gsap'],
 	},
 
 	plugins: [

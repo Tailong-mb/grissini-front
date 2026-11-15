@@ -24,6 +24,8 @@ const { animationContainer } = useAnimations();
 const { locale } = useI18n();
 const { data: cgvData } = await useSanityCgv(locale);
 
+useSeo(() => ({ seo: cgvData.value?.seo, title: cgvData.value?.title || 'CGV' }));
+
 const pageData = computed(() => {
 	if (!cgvData.value) return null;
 	return {

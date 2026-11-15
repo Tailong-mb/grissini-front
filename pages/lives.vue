@@ -48,6 +48,8 @@ import { useAnimations } from '@/composables/useAnimations';
 
 const { animationContainer } = useAnimations();
 
+useSeo(() => ({ title: 'Lives' }));
+
 const classes = ['tb:col-start-2 tb:col-end-4 dk:col-start-2 dk:col-end-4', ' tb:col-start-6 tb:col-end-8 dk:col-start-6 dk:col-end-8', ' tb:col-start-10 tb:col-end-12 dk:col-start-10 dk:col-end-12'];
 
 const { $lenis } = useNuxtApp();
@@ -183,7 +185,7 @@ const goToPage = (page) => {
 	}
 };
 
-if (process.client) {
+if (import.meta.client) {
 	window.addEventListener('resize', handleResize);
 	handleResize();
 }
