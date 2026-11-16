@@ -124,7 +124,7 @@ const openAnimation = (delay = 0) => {
 onMounted(async () => {
 	await document.fonts.ready;
 	if (LOADER_PLAYED.PLAYED === 'false') {
-		openAnimation(3.2);
+		openAnimation(1.8);
 	} else {
 		openAnimation(0);
 	}

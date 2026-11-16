@@ -1,6 +1,5 @@
 <template>
 	<div class="loader" ref="loaderRef">
-		<PartitionSvg theme="light" />
 		<div class="loader__logo" ref="logoRef">
 			<LogoSvg />
 		</div>
@@ -8,7 +7,6 @@
 </template>
 <script setup>
 import LogoSvg from '@/components/svg/LogoSvg.vue';
-import PartitionSvg from '@/components/svg/PartitionSvg.vue';
 import { gsap } from 'gsap';
 import { LOADER_PLAYED } from '@/utils/constant';
 
@@ -32,10 +30,11 @@ const openAnimation = () => {
 			duration: 0.8,
 			ease: 'linear',
 		},
-		2
+		0.2
 	);
 
 	tl.to(loaderRef.value, {
+		delay: 0.4,
 		clipPath: 'inset(0 0 100% 0)',
 		duration: 1,
 		ease: 'immg.zoomIn',

@@ -3,7 +3,7 @@ export const SITE_NAME = 'Grissini Project';
 export const DEFAULT_SITE_URL = 'https://grissinimusic.com';
 
 export const DEFAULT_DESCRIPTION =
-	'Official shop of the Grissini Project: CDs, vinyls and merch from 4 classically trained musicians playing the music of video games, animes and movies.';
+	'Official shop of the Grissini Project: CDs, vinyls and merch from the ensemble reuniting classical music and Japanese pop culture from video games, animes and movies.';
 
 export const DEFAULT_OG_IMAGE =
 	'https://cdn.sanity.io/images/f7eqgv37/production/f6018e49330ca783267d4ccee6b746b15ca2af5a-2662x1402.jpg?w=1200&h=630&fit=crop&fm=jpg&q=85';

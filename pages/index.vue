@@ -162,7 +162,7 @@ const handleWheel = (event) => {
 
 onMounted(() => {
 	if (LOADER_PLAYED.PLAYED === 'false') {
-		openAnimation(3.2);
+		openAnimation(1.8);
 	} else {
 		openAnimation(0);
 	}
